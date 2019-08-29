@@ -8,16 +8,6 @@ public enum OpCodeType {
 	DEST_TYPE_REGISTER,
 	DEST_TYPE_PAIR,
 	DEST_TYPE_ADDRESS,
-	DEST_R_A,
-	DEST_R_F,
-	DEST_R_B,
-	DEST_R_C,
-	DEST_R_D,
-	DEST_R_E,
-	DEST_R_H,
-	DEST_R_S,
-	DEST_R_P,
-	DEST_R_L,
 	OP_STOP, DEST_ADDR_HL,
 	
 	

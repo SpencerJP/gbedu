@@ -1,5 +1,8 @@
 package main;
 
+import mmu.GameBoyMMU;
+import cpu.GameBoyCPU;
+
 public class Utility {
 	
 	public static String byteToHex(byte num) {
@@ -66,11 +69,23 @@ public class Utility {
 	}
 	public static String toBinaryString(int b) {
 		return Integer.toBinaryString( b);
+	}	
+	
+	public static GameBoyCPU getCPU() {
+		return GameBoyCPU.getInstance();
 	}
-
-
+	public static GameBoyMMU getMemory() {
+		return GameBoyMMU.getInstance();
+	}
 	
+	public static int setBit(int byteValue, int position) {
+        return (byteValue | (1 << position)) & 0xff;
+    }
 	
+	public static boolean getBit(int byteValue, int position) {
+        return (byteValue & (1 << position)) != 0;
+    }
+
 }
 
 

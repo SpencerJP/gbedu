@@ -2,12 +2,14 @@ package cpu;
 
 import java.util.Stack;
 
+import cpu.opcodetypes.OpCode;
 import main.Utility;
 import mmu.GameBoyMMU;
 
 public class GameBoyCPU {
 	
 	GameBoyMMU mmu;
+	OpCodeFactory opFact;
 	
 	private int a = (byte) 0x01; // accumulator
 	private int b = (byte) 0b0000000;
@@ -18,12 +20,25 @@ public class GameBoyCPU {
 	private int l = (byte) 0b0000000;
 	private int f = (byte) 0b0000000; // flag register
 	private int s = (byte) 0b0000000;
-	private byte p = (byte) 0b0000000;
+	private int p = (byte) 0b0000000;
 	public int programCounter = 0;
 	
-	public GameBoyCPU(GameBoyMMU memory) {
-		this.mmu = memory;
+	
+	private static GameBoyCPU singletonInstance;
+	
+	private GameBoyCPU() {
+		this.mmu = GameBoyMMU.getInstance();
+		this.opFact = OpCodeFactory.getInstance();
 	}
+	
+	public static GameBoyCPU getInstance() {
+		if (singletonInstance == null) {
+			singletonInstance = new GameBoyCPU();
+		}
+		return singletonInstance;
+	}
+	
+	
 	
 	public void run() {
 		int i = 0;
@@ -42,8 +57,16 @@ public class GameBoyCPU {
 
 	private int runOperation() {
 		int cycles = 0;
-		OpCode op = new OpCode(this, mmu.getMemoryAtAddress(programCounter), programCounter);
-		cycles = op.runCode(mmu);
+		OpCode op = opFact.constructOpCode(mmu.getMemoryAtAddress(programCounter), programCounter);
+		try {
+			cycles = op.runCode(this, mmu);
+		}
+		catch(Exception e) {
+			System.out.println(e.getMessage());
+			e.printStackTrace();
+		}
+		programCounter = programCounter + (op.getInstructionSize());
+		System.out.println("programCounter: " + programCounter);
 		return cycles;
 		
 	}
@@ -52,7 +75,7 @@ public class GameBoyCPU {
 		return a;
 	}
 
-	public void setA(byte a) {
+	public void setA(int a) {
 		this.a = a;
 	}
 
@@ -60,7 +83,7 @@ public class GameBoyCPU {
 		return b;
 	}
 
-	public void setB(byte b) {
+	public void setB(int b) {
 		this.b = b;
 	}
 
@@ -68,7 +91,7 @@ public class GameBoyCPU {
 		return c;
 	}
 
-	public void setC(byte c) {
+	public void setC(int c) {
 		this.c = c;
 	}
 
@@ -76,7 +99,7 @@ public class GameBoyCPU {
 		return d;
 	}
 
-	public void setD(byte d) {
+	public void setD(int d) {
 		this.d = d;
 	}
 
@@ -84,7 +107,7 @@ public class GameBoyCPU {
 		return e;
 	}
 
-	public void setE(byte e) {
+	public void setE(int e) {
 		this.e = e;
 	}
 
@@ -92,7 +115,7 @@ public class GameBoyCPU {
 		return f;
 	}
 
-	public void setF(byte f) {
+	public void setF(int f) {
 		this.f = f;
 	}
 
@@ -100,7 +123,7 @@ public class GameBoyCPU {
 		return s;
 	}
 
-	public void setS(byte s) {
+	public void setS(int s) {
 		this.s = s;
 	}
 
@@ -108,7 +131,7 @@ public class GameBoyCPU {
 		return p;
 	}
 
-	public void setP(byte p) {
+	public void setP(int p) {
 		this.p = p;
 	}
 
@@ -124,7 +147,7 @@ public class GameBoyCPU {
 		return h;
 	}
 
-	public void setH(byte h) {
+	public void setH(int h) {
 		this.h = h;
 	}
 
@@ -132,12 +155,55 @@ public class GameBoyCPU {
 		return l;
 	}
 
-	public void setL(byte l) {
+	public void setL(int l) {
 		this.l = l;
 	}
 
 	public int getHLAddress() {
 		return Utility.bytesToAddress(h, l);
+	}
+
+	public void setHL(int data) {
+		setL((data & 0xff));
+		setH((data >> 8) & 0xff);
+	}
+
+	public void setSP(int data) {
+		System.out.println(Utility.byteToHex(data));
+		setP((data & 0xff));
+		setS((data >> 8) & 0xff);
+		
+	}
+
+	public void setBC(int data) {
+		setC((byte)(data & 0xff));
+		setB((byte)((data >> 8) & 0xff));
+		
+	}
+	public void setDE(int data) {
+		setE((byte)(data & 0xff));
+		setD((byte)((data >> 8) & 0xff));
+		
+	}
+
+	public int getHL() {
+		return (h << 8 | l);
+				
+	}
+	
+	public int getSP() {
+		return (s << 8 | p);
+				
+	}
+	
+	public int getDE() {
+		return (d << 8 | e);
+				
+	}
+	
+	public int getBC() {
+		return (b << 8 | c);
+				
 	}
 	
 	

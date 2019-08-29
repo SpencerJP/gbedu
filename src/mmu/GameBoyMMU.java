@@ -1,17 +1,23 @@
 package mmu;
 
-import java.io.BufferedReader;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+
 
 public class GameBoyMMU {
 	
 	private File file;
 	private byte[] memory = new byte[65536];
 	private int length = -1;
+	private static GameBoyMMU singletonInstance;
 	
-	public GameBoyMMU(String filename) throws Exception {
+	private GameBoyMMU() {
+				
+	}
+	
+	public void initialize(String filename) throws IOException {
 		file = new File(filename); 
 		  
 		FileInputStream fstream = new FileInputStream(file);
@@ -26,11 +32,17 @@ public class GameBoyMMU {
 		finally {
 			fstream.close();
 		}
-		
 	}
 	
-	public byte getMemoryAtAddress(int address) throws ArrayIndexOutOfBoundsException {
-		return memory[address];
+	public static GameBoyMMU getInstance() {
+		if (singletonInstance == null) {
+			singletonInstance = new GameBoyMMU();
+		}
+		return singletonInstance;
+	}
+	
+	public int getMemoryAtAddress(int address) throws ArrayIndexOutOfBoundsException {
+		return memory[address] & 0xFF;
 		
 	}
 	
@@ -42,8 +54,8 @@ public class GameBoyMMU {
 		return length;
 	}
 
-	public void setMemoryAtAddress(int address, byte data) {
-		memory[address] = data;
+	public void setMemoryAtAddress(int address, int source) {
+		memory[address] = (byte) source;
 	}
 
 	
