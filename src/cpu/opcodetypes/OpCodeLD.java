@@ -1,6 +1,7 @@
 package cpu.opcodetypes;
 
 import cpu.GameBoyCPU;
+import main.Utility;
 import mmu.GameBoyMMU;
 
 public class OpCodeLD extends OpCode {
@@ -10,16 +11,17 @@ public class OpCodeLD extends OpCode {
 	private int source = 0;
 	private int source2 = 0;
 	private OpCodeRegister register;
+	private OpCodeRegister sourceRegister = null;
 	
-	public OpCodeLD(int cycles, int instructionSize, int programAddress,
+	public OpCodeLD(int cycles, int instructionSize,
 			int destAddress, int source) {
-		super(cycles, instructionSize, programAddress);
+		super(cycles, instructionSize);
 		this.destAddress = destAddress;
 		this.source = source;
 	}
 
-	public OpCodeLD(int cycles, int instructionSize, int programAddress,OpCodeRegister register) {
-		super(cycles, instructionSize, programAddress);
+	public OpCodeLD(int cycles, int instructionSize, OpCodeRegister register) {
+		super(cycles, instructionSize);
 		this.register = register;
 		switch(register) {
 		case REGISTERS_SP:
@@ -36,10 +38,20 @@ public class OpCodeLD extends OpCode {
 		}
 	}
 
+	public OpCodeLD(int cycles, int instructionSize,
+			OpCodeRegister register, OpCodeRegister sourceRegister) {
+		super(cycles, instructionSize);
+		this.register = register;
+		this.sourceRegister = sourceRegister;
+	}
+
 	@Override
 	public int runCode(GameBoyCPU cpu, GameBoyMMU mmu) throws Exception {
 		if (destAddress != -1) {
 			mmu.setMemoryAtAddress(destAddress, source);
+		}
+		else if(sourceRegister != null) {
+			setRegister(cpu, register, getRegister(cpu, sourceRegister));
 		}
 		else {
 			setRegister(cpu, register, source);

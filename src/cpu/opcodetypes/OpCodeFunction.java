@@ -6,4 +6,16 @@ public enum OpCodeFunction {
 	ADD,
 	OR,
 	CP,
+	INC,
+	DEC,
+	BIT,
+	SET,
+	RES,
+	SWAP,
+	RL,
+	SLA,
+	SRL,
+	RR,
+	RRC,
+	
 }

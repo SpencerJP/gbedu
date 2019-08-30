@@ -7,22 +7,19 @@ public class OpCodeJump extends OpCode {
 	
 	private OpCodeCondition condition;
 	private int destAddress;
+	private int destAddress2;
 
-	public OpCodeJump(int cycles, int instructionSize, int programAddress, int address, OpCodeCondition condition) {
-		super(cycles, instructionSize, programAddress);
-		destAddress = address;
-		this.condition = condition;
-	}
-	
-	public OpCodeJump(int cycles, int instructionSize, int programAddress, int address) {
-		super(cycles, instructionSize, programAddress);
-		destAddress = address;
+	public OpCodeJump(int cycles, int instructionSize, OpCodeCondition condition) {
+		super(cycles, instructionSize);
 		this.condition = condition;
 	}
 
 
 	@Override
 	public int runCode(GameBoyCPU cpu, GameBoyMMU mmu) throws Exception {
+		destAddress = getRelativeMemory(2);
+		destAddress2 = getRelativeMemory(1);
+		destAddress = (destAddress << 8) | destAddress2;
 		if(condition != null) {
 			switch(condition) {
 			case Z:

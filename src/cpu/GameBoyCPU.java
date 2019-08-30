@@ -11,7 +11,7 @@ public class GameBoyCPU {
 	GameBoyMMU mmu;
 	OpCodeFactory opFact;
 	
-	private int a = (byte) 0x01; // accumulator
+	private int a = (byte) 0x00; // accumulator
 	private int b = (byte) 0b0000000;
 	private int c = (byte) 0b0000000;
 	private int d = (byte) 0b0000000;
@@ -57,7 +57,7 @@ public class GameBoyCPU {
 
 	private int runOperation() {
 		int cycles = 0;
-		OpCode op = opFact.constructOpCode(mmu.getMemoryAtAddress(programCounter), programCounter);
+		OpCode op = opFact.constructOpCode(mmu.getMemoryAtAddress(programCounter));
 		try {
 			cycles = op.runCode(this, mmu);
 		}
