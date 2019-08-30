@@ -10,36 +10,43 @@ public class OpCodeMath extends OpCode {
 	private int source;
 	private OpCodeRegister register;
 
-	public OpCodeMath(int cycles, int instructionSize, int programAddress, OpCodeFunction function, OpCodeRegister register, byte data) {
-		super(cycles, instructionSize, programAddress);
-		// TODO Auto-generated constructor stub
+	public OpCodeMath(int cycles, int instructionSize, OpCodeFunction function, OpCodeRegister register, byte data) {
+		super(cycles, instructionSize);
 	}
 	
-	public OpCodeMath(int cycles, int instructionSize, int programAddress, OpCodeFunction function, OpCodeRegister register) {
-		super(cycles, instructionSize, programAddress);
+	public OpCodeMath(int cycles, int instructionSize, OpCodeFunction function, OpCodeRegister register) {
+		super(cycles, instructionSize);
 		this.function = function;
 		this.register = register;
-		switch(function) {
-		case XOR:
-			source = Utility.getCPU().getA();
-			break;
-		default:
-			break;
-		}
 	}
 
 	@Override
 	public int runCode(GameBoyCPU cpu, GameBoyMMU mmu) throws Exception {
 		switch(function) {
 		case XOR:
-			setRegister(cpu, register, getRegister(cpu, register)^getAccumulator());
+			setAccumulator(cpu, getRegister(cpu, register)^getAccumulator());
 			setFlags(false, false, false, (getRegister(cpu,register) == 0));
 			break;
+		case AND:
+			setAccumulator(cpu, getRegister(cpu, register) & getAccumulator());
+			setFlags(false, false, false, (getRegister(cpu,register) == 0));
+		case OR:
+			setAccumulator(cpu, getRegister(cpu, register) | getAccumulator());
+			setFlags(false, false, false, (getRegister(cpu,register) == 0));
+		case ADD:
+			boolean hFlag = (((getAccumulator() & 0xf) + (getRegister(cpu, register) & 0xf)) & 0x10) == 0x10;
+			int result = getAccumulator() + getRegister(cpu, register);
+			boolean cFlag = result > 255;
+			setAccumulator(cpu, result & 0xFF);
+			setFlagZ(getAccumulator() == 0x00);
+			setFlagH(hFlag);
+			setFlagC(cFlag);
 		default:
 			throw new UnsupportedOperationException("function not implemented");
 		}
 		return cycles;
 	}
+
 	
 	
 

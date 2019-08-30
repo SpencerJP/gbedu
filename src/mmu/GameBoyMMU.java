@@ -5,6 +5,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 
+import main.Utility;
+
 
 public class GameBoyMMU {
 	
@@ -52,6 +54,12 @@ public class GameBoyMMU {
 
 	public int getLength() {
 		return length;
+	}
+	
+	public void dump() {
+		for(byte b : memory) {
+			System.out.print(Utility.byteToHex(b) + " ");
+		}
 	}
 
 	public void setMemoryAtAddress(int address, int source) {

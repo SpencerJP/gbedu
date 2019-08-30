@@ -11,10 +11,9 @@ public abstract class OpCode {
 	protected int instructionSize;
 	protected int programAddress;
 	
-	public OpCode(int cycles, int instructionSize, int programAddress) {
+	public OpCode(int cycles, int instructionSize) {
 		this.cycles = cycles;
 		this.instructionSize = instructionSize;
-		this.programAddress = programAddress;
 	}
 	
 	/**
@@ -26,7 +25,7 @@ public abstract class OpCode {
 	public abstract int runCode(GameBoyCPU cpu, GameBoyMMU mmu) throws Exception;
 	
 	/**
-	 * @param the offset of which memory position to read,
+	 * @param offset of which memory position to read,
 	 * relative to the address of the current opcode
 	 * @return the memory at that position
 	 */
@@ -177,6 +176,19 @@ public abstract class OpCode {
 		GameBoyCPU cpu = Utility.getCPU();
 		int f = cpu.getF();
 		return Utility.getBit(f, 7);
+	}
+	
+	public boolean getBitFromRegister(OpCodeRegister register, int bitPos) throws Exception {
+		return Utility.getBit(getRegister(Utility.getCPU(),register), bitPos);
+	}
+	
+	public void setBitFromRegister(OpCodeRegister register, int bitPos, boolean value) throws Exception {
+		setRegister(Utility.getCPU(), register, Utility.setBit(getRegister(Utility.getCPU(),register), bitPos));
+	}
+	
+
+	public void setAccumulator(GameBoyCPU cpu, int i) {
+		cpu.setA(i);		
 	}
 	
 	
