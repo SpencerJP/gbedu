@@ -1,4 +1,4 @@
-package cpu.opcodetypes;
+package cpu.opcodetypes.enums;
 
 public enum OpCodeCondition {
 	NZ,

@@ -3,7 +3,23 @@ package main;
 import mmu.GameBoyMMU;
 import cpu.GameBoyCPU;
 
-public class Utility {
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+public class Util {
+
+	public static Logger logger = Logger.getLogger("GameBoy");
+	static {
+		logger.setLevel(Level.INFO);
+	}
+
+	public static Logger getLogger() {
+		return logger;
+	}
+
+	public static void log(String s) {
+		logger.log(Level.INFO, s);
+	}
 	
 	public static String byteToHex(byte num) {
 		char[] hexDigits = new char[2];
@@ -81,10 +97,25 @@ public class Utility {
 	public static int setBit(int byteValue, int position) {
         return (byteValue | (1 << position)) & 0xff;
     }
+
+	public static int unsetBit(int byteValue, int position) {
+		return (byteValue & ~(1 << position)) & 0xff;
+	}
 	
 	public static boolean getBit(int byteValue, int position) {
         return (byteValue & (1 << position)) != 0;
     }
+
+    public static String flagsToString() {
+		int f = getCPU().getF();
+		String z = getBit(f, 7) ? "1" : "0";
+		String n = getBit(f, 6) ? "1" : "0";
+		String h = getBit(f, 5) ? "1" : "0";
+		String c = getBit(f, 4) ? "1" : "0";
+		return "z="+z+"n="+n+"h="+h+"c="+c;
+
+
+	}
 
 }
 

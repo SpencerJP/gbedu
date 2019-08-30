@@ -1,16 +1,20 @@
 package cpu;
 
-import java.util.Stack;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import cpu.opcodetypes.OpCode;
-import main.Utility;
+import cpu.opcodetypes.OpCodeJump;
+import main.Util;
 import mmu.GameBoyMMU;
 
 public class GameBoyCPU {
-	
+
+	public boolean isJumping = false;
 	GameBoyMMU mmu;
 	OpCodeFactory opFact;
-	
+
+
 	private int a = (byte) 0x00; // accumulator
 	private int b = (byte) 0b0000000;
 	private int c = (byte) 0b0000000;
@@ -21,7 +25,10 @@ public class GameBoyCPU {
 	private int f = (byte) 0b0000000; // flag register
 	private int s = (byte) 0b0000000;
 	private int p = (byte) 0b0000000;
-	public int programCounter = 0;
+
+
+
+	private int programCounter = 0;
 	
 	
 	private static GameBoyCPU singletonInstance;
@@ -41,32 +48,40 @@ public class GameBoyCPU {
 	
 	
 	public void run() {
-		int i = 0;
-		System.out.println(a);
-		System.out.println(Utility.toBinaryString((byte) a));
 		int cycles = 0;
-		while(i < 2) {
-			System.out.println("next opCode: " +Utility.byteToHex(mmu.getMemoryAtAddress(programCounter)));
+		while(getProgramCounter() != 12) {
+			Util.log("next opCode: " + Util.byteToHex(mmu.getMemoryAtAddress(getProgramCounter())));
 			cycles = runOperation();
-			i++;
+			Util.log("HL: " + Util.byteToHex(h) + " " + Util.byteToHex(l) );
+			Util.log(Util.flagsToString());
 		}
-		System.out.println(Utility.byteToHex(s) + " " + Utility.byteToHex(p) );
-		System.out.println(Utility.toBinaryString(a));
 	}
 	
 
 	private int runOperation() {
 		int cycles = 0;
-		OpCode op = opFact.constructOpCode(mmu.getMemoryAtAddress(programCounter));
 		try {
+			OpCode op = opFact.constructOpCode(getProgramCounter(), mmu.getMemoryAtAddress(getProgramCounter()));
+			if (op == null) {
+				throw new UnsupportedOperationException("Opcode " + Util.byteToHex(mmu.getMemoryAtAddress(getProgramCounter())) + " has not been implemented.");
+			}
 			cycles = op.runCode(this, mmu);
+			if(!isJumping) {
+				setProgramCounter(getProgramCounter() + op.getInstructionSize());
+			}
+			else {
+				isJumping = false;
+			}
+		}
+		catch(UnsupportedOperationException e){
+
+			Util.log(e.getMessage());
+			throw new UnsupportedOperationException();
 		}
 		catch(Exception e) {
-			System.out.println(e.getMessage());
+			Util.log(e.getMessage());
 			e.printStackTrace();
 		}
-		programCounter = programCounter + (op.getInstructionSize());
-		System.out.println("programCounter: " + programCounter);
 		return cycles;
 		
 	}
@@ -135,12 +150,13 @@ public class GameBoyCPU {
 		this.p = p;
 	}
 
-	public int getOpAddress() {
+	public int getProgramCounter() {
 		return programCounter;
 	}
 
-	public void setOpAddress(int opAddress) {
-		this.programCounter = opAddress;
+	public void setProgramCounter(int newAddress) {
+		Util.log(Integer.toString(newAddress));
+		this.programCounter = newAddress;
 	}
 
 	public int getH() {
@@ -160,7 +176,7 @@ public class GameBoyCPU {
 	}
 
 	public int getHLAddress() {
-		return Utility.bytesToAddress(h, l);
+		return Util.bytesToAddress(h, l);
 	}
 
 	public void setHL(int data) {
@@ -169,7 +185,6 @@ public class GameBoyCPU {
 	}
 
 	public void setSP(int data) {
-		System.out.println(Utility.byteToHex(data));
 		setP((data & 0xff));
 		setS((data >> 8) & 0xff);
 		

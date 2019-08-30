@@ -1,7 +1,7 @@
 package cpu.opcodetypes;
 
 import cpu.GameBoyCPU;
-import main.Utility;
+import cpu.opcodetypes.enums.OpCodeRegister;
 import mmu.GameBoyMMU;
 
 public class OpCodeLD extends OpCode {
@@ -23,19 +23,7 @@ public class OpCodeLD extends OpCode {
 	public OpCodeLD(int cycles, int instructionSize, OpCodeRegister register) {
 		super(cycles, instructionSize);
 		this.register = register;
-		switch(register) {
-		case REGISTERS_SP:
-		case REGISTERS_HL:
-		case REGISTERS_BC:
-		case REGISTERS_DE:
-			source = getRelativeMemory(2);
-			source2 = getRelativeMemory(1);
-			source = (source << 8) | source2;
-			break;
-		default:
-			source = getRelativeMemory(1);
-			break;
-		}
+
 	}
 
 	public OpCodeLD(int cycles, int instructionSize,
@@ -47,6 +35,19 @@ public class OpCodeLD extends OpCode {
 
 	@Override
 	public int runCode(GameBoyCPU cpu, GameBoyMMU mmu) throws Exception {
+		switch(register) {
+			case REGISTERS_SP:
+			case REGISTERS_HL:
+			case REGISTERS_BC:
+			case REGISTERS_DE:
+				source = getRelativeMemory(cpu,2);
+				source2 = getRelativeMemory(cpu,1);
+				source = (source << 8) | source2;
+				break;
+			default:
+				source = getRelativeMemory(cpu,1);
+				break;
+		}
 		if (destAddress != -1) {
 			mmu.setMemoryAtAddress(destAddress, source);
 		}

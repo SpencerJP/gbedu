@@ -1,7 +1,8 @@
 package cpu.opcodetypes;
 
 import cpu.GameBoyCPU;
-import main.Utility;
+import cpu.opcodetypes.enums.OpCodeRegister;
+import main.Util;
 import mmu.GameBoyMMU;
 
 public abstract class OpCode {
@@ -29,8 +30,8 @@ public abstract class OpCode {
 	 * relative to the address of the current opcode
 	 * @return the memory at that position
 	 */
-	public int getRelativeMemory(int offset) {
-		return Utility.getMemory().getMemoryAtAddress(programAddress + offset);
+	public int getRelativeMemory(GameBoyCPU cpu, int offset) {
+		return Util.getMemory().getMemoryAtAddress(cpu.getProgramCounter() + offset);
 	}
 
 	public int getInstructionSize() {
@@ -38,6 +39,7 @@ public abstract class OpCode {
 	}
 	
 	public void setRegister(GameBoyCPU cpu, OpCodeRegister register, int source) throws Exception {
+		int address = 0;
 		byte data = (byte)source;
 		switch (register) {
 		case REGISTER_A:
@@ -73,10 +75,20 @@ public abstract class OpCode {
 		case REGISTERS_DE:
 			cpu.setDE(data);
 			break;
+		case ADDRESS_HL_INC:
+			address = cpu.getHL();
+			cpu.setHL(address + 1);
+			Util.getMemory().setMemoryAtAddress(address, source);
+			break;
+		case ADDRESS_HL_DEC:
+			address = cpu.getHL();
+			cpu.setHL(address - 1);
+			Util.getMemory().setMemoryAtAddress(address, source);
+			break;
 		case REGISTER_F:
 			throw new Exception("Invalid Register Access");
 		default:
-			break;
+			throw new UnsupportedOperationException("Not implemented?");
 		}
 	}
 	
@@ -110,92 +122,118 @@ public abstract class OpCode {
 			return cpu.getF();
 		case ADDRESS_HL:
 			address = cpu.getHL();
-			return Utility.getMemory().getMemoryAtAddress(address);
+			return Util.getMemory().getMemoryAtAddress(address);
 		case ADDRESS_BC:
 			address = cpu.getBC();
-			return Utility.getMemory().getMemoryAtAddress(address);
+			return Util.getMemory().getMemoryAtAddress(address);
 		case ADDRESS_DE:
 			address = cpu.getDE();
-			return Utility.getMemory().getMemoryAtAddress(address);
+			return Util.getMemory().getMemoryAtAddress(address);
 		case ADDRESS_HL_INC:
 			address = cpu.getHL();
 			cpu.setHL(address + 1);
-			return Utility.getMemory().getMemoryAtAddress(address);
+			return Util.getMemory().getMemoryAtAddress(address);
 		case ADDRESS_HL_DEC:
 			address = cpu.getHL();
 			cpu.setHL(address - 1);
-			return Utility.getMemory().getMemoryAtAddress(address);
+			return Util.getMemory().getMemoryAtAddress(address);
 		default:
-			throw new Exception("invalid data location");
+			throw new UnsupportedOperationException("Not implemented?");
 		}
 	}
 	
 	public int getAccumulator() {
-		return Utility.getCPU().getA();
+		return Util.getCPU().getA();
 	}
 	
 	public void setFlagC(boolean set) {
-		GameBoyCPU cpu = Utility.getCPU();
+		GameBoyCPU cpu = Util.getCPU();
 		int f = cpu.getF();
-		cpu.setF(Utility.setBit(f, 4));
+		if(set) {
+			cpu.setF(Util.setBit(f, 4));
+		}
+		else {
+			cpu.setF(Util.unsetBit(f, 4));
+		}
 	}
 	public void setFlagH(boolean set) {
-		GameBoyCPU cpu = Utility.getCPU();
+		GameBoyCPU cpu = Util.getCPU();
 		int f = cpu.getF();
-		cpu.setF(Utility.setBit(f, 5));
+		if(set) {
+			cpu.setF(Util.setBit(f, 5));
+		}
+		else {
+			cpu.setF(Util.unsetBit(f, 5));
+		}
 	}
 	public void setFlagN(boolean set) {
-		GameBoyCPU cpu = Utility.getCPU();
+		GameBoyCPU cpu = Util.getCPU();
 		int f = cpu.getF();
-		cpu.setF(Utility.setBit(f, 6));
+		if(set) {
+			cpu.setF(Util.setBit(f, 6));
+		}
+		else {
+			cpu.setF(Util.unsetBit(f, 6));
+		}
 	}
 	public void setFlagZ(boolean set) {
-		GameBoyCPU cpu = Utility.getCPU();
+		GameBoyCPU cpu = Util.getCPU();
 		int f = cpu.getF();
-		cpu.setF(Utility.setBit(f, 7));
+		if(set) {
+			cpu.setF(Util.setBit(f, 7));
+		}
+		else {
+			cpu.setF(Util.unsetBit(f, 7));
+		}
 	}
 	
 	public boolean getFlagC() {
-		GameBoyCPU cpu = Utility.getCPU();
+		GameBoyCPU cpu = Util.getCPU();
 		int f = cpu.getF();
-		return Utility.getBit(f, 4);
+		return Util.getBit(f, 4);
 	}
 	public boolean getFlagH() {
-		GameBoyCPU cpu = Utility.getCPU();
+		GameBoyCPU cpu = Util.getCPU();
 		int f = cpu.getF();
-		return Utility.getBit(f, 5);
+		return Util.getBit(f, 5);
 	}
 
 	public boolean getFlagN() {
-		GameBoyCPU cpu = Utility.getCPU();
+		GameBoyCPU cpu = Util.getCPU();
 		int f = cpu.getF();
-		return Utility.getBit(f, 6);
+		return Util.getBit(f, 6);
 	}
 
 	public boolean getFlagZ() {
-		GameBoyCPU cpu = Utility.getCPU();
+		GameBoyCPU cpu = Util.getCPU();
 		int f = cpu.getF();
-		return Utility.getBit(f, 7);
+		return Util.getBit(f, 7);
 	}
 	
 	public boolean getBitFromRegister(OpCodeRegister register, int bitPos) throws Exception {
-		return Utility.getBit(getRegister(Utility.getCPU(),register), bitPos);
+		return Util.getBit(getRegister(Util.getCPU(),register), bitPos);
 	}
 	
 	public void setBitFromRegister(OpCodeRegister register, int bitPos, boolean value) throws Exception {
-		setRegister(Utility.getCPU(), register, Utility.setBit(getRegister(Utility.getCPU(),register), bitPos));
+		setRegister(Util.getCPU(), register, Util.setBit(getRegister(Util.getCPU(),register), bitPos));
 	}
 	
 
 	public void setAccumulator(GameBoyCPU cpu, int i) {
 		cpu.setA(i);		
 	}
-	
-	
+
+	/**
+	 *
+	 * @param c set Flag C (carry)
+	 * @param h set Flag H (half carry)
+	 * @param n set Flag N (subtraction flag? not sure but maybe the opposite of carry)
+	 * @param z set Flag Z (zero flag)
+	 */
 	public void setFlags(boolean c, boolean h, boolean n, boolean z) {
 		setFlagC(c);
 		setFlagH(h);
-		setFlagC(n);
-		setFlagH(z);
+		setFlagN(n);
+		setFlagZ(z);
 	}
 }
