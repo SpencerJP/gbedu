@@ -6,8 +6,11 @@ import java.util.logging.Logger;
 import cpu.opcodetypes.MissingOpCodeException;
 import cpu.opcodetypes.OpCode;
 import cpu.opcodetypes.OpCodeJump;
+import gpu.GameBoyGPU;
 import main.Util;
 import mmu.GameBoyMMU;
+
+import javax.swing.*;
 
 public class GameBoyCPU {
 
@@ -50,10 +53,13 @@ public class GameBoyCPU {
 	
 	public void run() throws Exception {
 		int cycles = 0;
+		GameBoyGPU gpu = GameBoyGPU.getInstance();
 		while(true) {
 			cycles = runOperation();
+			gpu.addClockTime(cycles);
+            gpu.run();
 			//Util.log("HL: " + Util.byteToHex(h) + " " + Util.byteToHex(l) );
-			//Util.log(Util.flagsToString());
+			Util.log(Util.flagsToString());
 		}
 	}
 	

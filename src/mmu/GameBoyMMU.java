@@ -11,12 +11,12 @@ import main.Util;
 public class GameBoyMMU {
 	
 	private File file;
-	private byte[] memory;
+	private int[] memory;
 	private int length = -1;
 	private static GameBoyMMU singletonInstance;
 	
 	private GameBoyMMU() {
-		memory = new byte[65536];
+		memory = new int[65536];
 	}
 	
 	public void initialize(String filename) throws IOException {
@@ -26,15 +26,24 @@ public class GameBoyMMU {
 		
 		try {
 			this.length = (new Long(file.length())).intValue();
-            fStream.read(memory, 0, (new Long(file.length())).intValue());
+			byte[] buff = new byte[65536];
+            fStream.read(buff, 0, (new Long(file.length())).intValue());
+            for(int i = 0; i < buff.length; i++) {
+            	memory[i] = buff[i];
+			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		finally {
             fStream.close();
 		}
+		powerUp();
 	}
-	
+
+	private void powerUp() {
+		memory[0xff44] = 0x90;
+	}
+
 	public static GameBoyMMU getInstance() {
 		if (singletonInstance == null) {
 			singletonInstance = new GameBoyMMU();
@@ -47,7 +56,7 @@ public class GameBoyMMU {
 		
 	}
 	
-	public byte[] getMemory() {
+	public int[] getMemory() {
 		return memory;
 	}
 
@@ -56,13 +65,23 @@ public class GameBoyMMU {
 	}
 	
 	public void dump() {
-		for(byte b : memory) {
+		for(int b : memory) {
 			System.out.print(Util.byteToHex(b) + " ");
 		}
 	}
 
 	public void setMemoryAtAddress(int address, int source) {
-		memory[address] = (byte) source;
+		switch(address & 0xF000) {
+			case 0x8000:
+			case 0x9000:
+				Util.getGPU().setVRAM(address, source);
+				Util.getGPU().updateTile(address);
+				memory[address] = source;
+			default:
+				memory[address] = source;
+				break;
+
+		}
 	}
 
 	

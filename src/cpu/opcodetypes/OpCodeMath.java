@@ -2,6 +2,7 @@ package cpu.opcodetypes;
 
 import cpu.opcodetypes.enums.OpCodeFunction;
 import cpu.opcodetypes.enums.OpCodeRegister;
+import main.Util;
 import mmu.GameBoyMMU;
 import cpu.GameBoyCPU;
 
@@ -99,6 +100,8 @@ public class OpCodeMath extends OpCode {
 					source = getRelativeMemory(cpu, 1);
 				}
 				accum = getAccumulator();
+				System.out.println("accum: " + accum + ", source:" + source);
+				System.out.println(((accum - source) & 0xff) == 0);
 				setFlagZ(((accum - source) & 0xff) == 0);
 				setFlagN(true);
 				setFlagH((0x0f & source) > (0x0f & accum));

@@ -1,5 +1,6 @@
 package main;
 
+import gpu.GameBoyGPU;
 import mmu.GameBoyMMU;
 import cpu.GameBoyCPU;
 
@@ -102,7 +103,7 @@ public class Util {
         return (byteValue | (1 << position)) & 0xff;
     }
 
-	public static int unsetBit(int byteValue, int position) {
+	public static int resetBit(int byteValue, int position) {
 		return (byteValue & ~(1 << position)) & 0xff;
 	}
 	
@@ -122,6 +123,9 @@ public class Util {
 
 	}
 
+	public static GameBoyGPU getGPU() {
+		return GameBoyGPU.getInstance();
+	}
 }
 
 

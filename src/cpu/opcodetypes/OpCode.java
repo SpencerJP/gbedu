@@ -195,7 +195,7 @@ public abstract class OpCode {
 			cpu.setF(Util.setBit(f, 4));
 		}
 		else {
-			cpu.setF(Util.unsetBit(f, 4));
+			cpu.setF(Util.resetBit(f, 4));
 		}
 	}
 	public void setFlagH(boolean set) {
@@ -205,7 +205,7 @@ public abstract class OpCode {
 			cpu.setF(Util.setBit(f, 5));
 		}
 		else {
-			cpu.setF(Util.unsetBit(f, 5));
+			cpu.setF(Util.resetBit(f, 5));
 		}
 	}
 	public void setFlagN(boolean set) {
@@ -215,7 +215,7 @@ public abstract class OpCode {
 			cpu.setF(Util.setBit(f, 6));
 		}
 		else {
-			cpu.setF(Util.unsetBit(f, 6));
+			cpu.setF(Util.resetBit(f, 6));
 		}
 	}
 	public void setFlagZ(boolean set) {
@@ -225,7 +225,7 @@ public abstract class OpCode {
 			cpu.setF(Util.setBit(f, 7));
 		}
 		else {
-			cpu.setF(Util.unsetBit(f, 7));
+			cpu.setF(Util.resetBit(f, 7));
 		}
 	}
 	
