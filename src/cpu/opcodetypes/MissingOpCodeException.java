@@ -9,8 +9,12 @@ public class MissingOpCodeException extends Exception {
     public String opCodePosition;
     public int programCounter;
     public MissingOpCodeException(GameBoyMMU mmu, int programCounter) {
-        this.programCounter = programCounter;
         opCode = Util.byteToHex(mmu.getMemoryAtAddress(programCounter));
+        if (opCode.equals("cb")) {
+            int nextCode = Util.getMemory().getMemoryAtAddress(programCounter + 1);
+            opCode = opCode + Util.byteToHex(nextCode);
+        }
+        this.programCounter = programCounter;
         opCodePosition = Util.byteToHex(programCounter);
     }
 

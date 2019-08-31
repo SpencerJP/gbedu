@@ -6,7 +6,7 @@ import cpu.GameBoyCPU;
 public class OpCodeNOP extends OpCode {
 
 	public OpCodeNOP() {
-		super(4, 1);
+		super("NOP", 4, 1);
 	}
 
 	@Override

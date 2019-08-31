@@ -89,8 +89,8 @@ public class Util {
 	}
 	public static String toBinaryString(int b) {
 		return Integer.toBinaryString( b);
-	}	
-	
+	}
+
 	public static GameBoyCPU getCPU() {
 		return GameBoyCPU.getInstance();
 	}
@@ -109,6 +109,7 @@ public class Util {
 	public static boolean getBit(int byteValue, int position) {
         return (byteValue & (1 << position)) != 0;
     }
+
 
     public static String flagsToString() {
 		int f = getCPU().getF();

@@ -2,6 +2,7 @@ package cpu.opcodetypes;
 
 import cpu.GameBoyCPU;
 import cpu.opcodetypes.enums.OpCodeRegister;
+import main.Util;
 import mmu.GameBoyMMU;
 
 public class OpCodeLD extends OpCode {
@@ -13,15 +14,20 @@ public class OpCodeLD extends OpCode {
 	private OpCodeRegister register;
 	private OpCodeRegister sourceRegister = null;
 
-	public OpCodeLD(int cycles, int instructionSize, OpCodeRegister register) {
-		super(cycles, instructionSize);
+	public OpCodeLD(String doc, int cycles, int instructionSize, OpCodeRegister register) {
+		super(doc, cycles, instructionSize);
 		this.register = register;
-
 	}
 
-	public OpCodeLD(int cycles, int instructionSize,
+	public OpCodeLD(String doc, int cycles, int instructionSize, OpCodeRegister register, int destAddress) {
+		super(doc, cycles, instructionSize);
+		this.register = register;
+		this.destAddress = destAddress;
+	}
+
+	public OpCodeLD(String doc, int cycles, int instructionSize,
 			OpCodeRegister register, OpCodeRegister sourceRegister) {
-		super(cycles, instructionSize);
+		super(doc, cycles, instructionSize);
 		this.register = register;
 		this.sourceRegister = sourceRegister;
 	}

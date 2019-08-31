@@ -13,13 +13,13 @@ public class OpCodeJump extends OpCode {
 	private int destAddress2;
 	private JumpType jumpType;
 
-	public OpCodeJump(int instructionSize, JumpType type, OpCodeCondition condition) {
-		super(-1, instructionSize);
+	public OpCodeJump(String doc, int instructionSize, JumpType type, OpCodeCondition condition) {
+		super(doc, -1, instructionSize);
 		jumpType = type;
 		this.condition = condition;
 	}
-	public OpCodeJump(int instructionSize, JumpType type) {
-		super(-1, instructionSize);
+	public OpCodeJump(String doc, int instructionSize, JumpType type) {
+		super(doc, -1, instructionSize);
 		jumpType = type;
 	}
 
@@ -38,36 +38,43 @@ public class OpCodeJump extends OpCode {
 			destAddress = getRelativeMemory(cpu, 2);
 			destAddress2 = getRelativeMemory(cpu, 1);
 			destAddress = (destAddress << 8) | destAddress2;
+		} else if(jumpType == JumpType.RETURN) {
+			destAddress = cpu.popSP();
 		}
 		if(condition != null) {
 			switch(condition) {
-			case Z:
-				if(getFlagZ()) {
-					break;
-				}
-				return 8;
-			case NZ:
-				if(!getFlagZ()) {
-					break;
-				}
-				return 8;
-			case C:
-				if(getFlagC()) {
-					break;
-				}
-				return 8;
-			case NC:
-				if(!getFlagC()) {
-					break;
-				}
-				return 8;
-				
+				case Z:
+					if(getFlagZ()) {
+						break;
+					}
+					return 8;
+				case NZ:
+					if(!getFlagZ()) {
+						break;
+					}
+					return 8;
+				case C:
+					if(getFlagC()) {
+						break;
+					}
+					return 8;
+				case NC:
+					if(!getFlagC()) {
+						break;
+					}
+					return 8;
+
 			}
 			if (jumpType == JumpType.CALL) {
 				Util.getCPU().pushSP(Util.getCPU().getProgramCounter() + getInstructionSize());
 				cpu.setProgramCounter(destAddress);
 				cpu.isJumping = true;
 				return 24;
+			}
+			if (jumpType == JumpType.RETURN) {
+				cpu.setProgramCounter(destAddress);
+				cpu.isJumping = true;
+				return 16;
 			}
 			cpu.setProgramCounter(destAddress);
 			return 12;
@@ -77,6 +84,11 @@ public class OpCodeJump extends OpCode {
 			cpu.setProgramCounter(destAddress);
 			cpu.isJumping = true;
 			return 24;
+		}
+		if (jumpType == JumpType.RETURN) {
+			cpu.setProgramCounter(destAddress);
+			cpu.isJumping = true;
+			return 16;
 		}
 		cpu.setProgramCounter(destAddress);
 		return 12;

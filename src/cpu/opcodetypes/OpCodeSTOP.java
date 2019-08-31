@@ -6,7 +6,7 @@ import cpu.GameBoyCPU;
 public class OpCodeSTOP extends OpCode {
 
 	public OpCodeSTOP() {
-		super(4, 2);
+		super("STOP", 4, 2);
 	}
 
 	@Override

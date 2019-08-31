@@ -16,16 +16,16 @@ public class GameBoyCPU {
 	OpCodeFactory opFact;
 
 
-	private int a = (byte) 0x00; // accumulator
-	private int b = (byte) 0b0000000;
-	private int c = (byte) 0b0000000;
-	private int d = (byte) 0b0000000;
-	private int e = (byte) 0b0000000;
-	private int h = (byte) 0b0000000;
-	private int l = (byte) 0b0000000;
-	private int f = (byte) 0b0000000; // flag register
-	private int s = (byte) 0b0000000;
-	private int p = (byte) 0b0000000;
+	private int a = 0x00; // accumulator
+	private int b = 0x00;
+	private int c = 0x00;
+	private int d = 0x00;
+	private int e = 0x00;
+	private int h = 0x00;
+	private int l = 0x00;
+	private int f = 0x00; // flag register
+	private int s = 0x00;
+	private int p = 0x00;
 
 
 
@@ -50,8 +50,7 @@ public class GameBoyCPU {
 	
 	public void run() throws Exception {
 		int cycles = 0;
-		while(getProgramCounter() != 32) {
-			//Util.log("next opCode: " + Util.byteToHex(mmu.getMemoryAtAddress(getProgramCounter())));
+		while(true) {
 			cycles = runOperation();
 			//Util.log("HL: " + Util.byteToHex(h) + " " + Util.byteToHex(l) );
 			//Util.log(Util.flagsToString());
@@ -62,10 +61,13 @@ public class GameBoyCPU {
 	private int runOperation() throws Exception {
 		int cycles = 0;
 		try {
+
 			OpCode op = opFact.constructOpCode(getProgramCounter(), mmu.getMemoryAtAddress(getProgramCounter()));
+
 			if (op == null) {
 				throw new MissingOpCodeException(mmu, getProgramCounter());
 			}
+			Util.log("next opCode: " + Util.byteToHex(mmu.getMemoryAtAddress(getProgramCounter())) + "["+op.toString()+"] at position " + getProgramCounter() + " (0x" + Util.byteToHex(getProgramCounter()) + ")");
 			cycles = op.runCode(this, mmu);
 			if(!isJumping) {
 				setProgramCounter(getProgramCounter() + op.getInstructionSize());
@@ -82,10 +84,6 @@ public class GameBoyCPU {
 
 			Util.log(Level.SEVERE, e.getMessage());
 			throw new UnsupportedOperationException(e.getMessage());
-		}
-		catch(Exception e) {
-			Util.log(Level.SEVERE, e.getMessage());
-			e.printStackTrace();
 		}
 		return cycles;
 		
@@ -139,16 +137,8 @@ public class GameBoyCPU {
 		this.f = f;
 	}
 
-	public int getS() {
-		return s;
-	}
-
 	public void setS(int s) {
 		this.s = s;
-	}
-
-	public int getP() {
-		return p;
 	}
 
 	public void setP(int p) {
@@ -160,7 +150,6 @@ public class GameBoyCPU {
 	}
 
 	public void setProgramCounter(int newAddress) {
-		//Util.log(Integer.toString(newAddress));
 		this.programCounter = newAddress;
 	}
 
@@ -180,10 +169,6 @@ public class GameBoyCPU {
 		this.l = l;
 	}
 
-	public int getHLAddress() {
-		return Util.bytesToAddress(h, l);
-	}
-
 	public void setHL(int data) {
 		setL((data & 0xff));
 		setH((data >> 8) & 0xff);
@@ -196,14 +181,20 @@ public class GameBoyCPU {
 	}
 
 	public void setBC(int data) {
-		setC((byte)(data & 0xff));
-		setB((byte)((data >> 8) & 0xff));
+		setC((data & 0xff));
+		setB((data >> 8) & 0xff);
 		
 	}
 	public void setDE(int data) {
-		setE((byte)(data & 0xff));
-		setD((byte)((data >> 8) & 0xff));
+		setE((data & 0xff));
+		setD((data >> 8) & 0xff);
 		
+	}
+
+	public void setAF(int data) {
+		setF((data & 0xff));
+		setA((data >> 8) & 0xff);
+
 	}
 
 	public int getHL() {
@@ -226,6 +217,10 @@ public class GameBoyCPU {
 				
 	}
 
+	public int getAF() {
+		return (a << 8 | f);
+	}
+
 	/**
 	 *
 	 * @param data in sixteen bits
@@ -246,8 +241,6 @@ public class GameBoyCPU {
 		setSP(getSP() + 1);
 		return (leftByte << 8 | rightByte);
 	}
-	
-	
-	
-	
+
+
 }

@@ -13,8 +13,10 @@ public abstract class OpCode {
 	protected int cycles;
 	protected int instructionSize;
 	protected int programAddress;
-	
-	public OpCode(int cycles, int instructionSize) {
+	protected String doc; // basic info about this code
+
+	public OpCode(String doc, int cycles, int instructionSize) {
+		this.doc = doc;
 		this.cycles = cycles;
 		this.instructionSize = instructionSize;
 	}
@@ -42,71 +44,88 @@ public abstract class OpCode {
 	
 	public void setRegister(GameBoyCPU cpu, OpCodeRegister register, int source) throws Exception {
 		int address = 0;
-		byte data = (byte)source;
 		switch (register) {
-		case REGISTER_A:
-			cpu.setA(data);
-			break;
-		case REGISTER_B:
-			cpu.setB(data);
-			break;
-		case REGISTER_C:
-			cpu.setC(data);
-			break;
-		case REGISTER_D:
-			cpu.setD(data);
-			break;
-		case REGISTER_E:
-			cpu.setE(data);
-			break;
-		case REGISTER_H:
-			cpu.setH(data);
-			break;
-		case REGISTER_L:
-			cpu.setL(data);
-			break;
-		case REGISTERS_HL:
-			cpu.setHL(data);
-			break;
-		case REGISTERS_SP:
-			cpu.setSP(data);
-			break;
-		case REGISTERS_BC:
-			cpu.setBC(data);
-			break;
-		case REGISTERS_DE:
-			cpu.setDE(data);
-			break;
-		case ADDRESS_HL:
-			address = cpu.getHL();
-			Util.getMemory().setMemoryAtAddress(address, source);
-			break;
-		case ADDRESS_HL_INC:
-			address = cpu.getHL();
-			cpu.setHL(address + 1);
-			Util.getMemory().setMemoryAtAddress(address, source);
-			break;
-		case ADDRESS_HL_DEC:
-			address = cpu.getHL();
-			cpu.setHL(address - 1);
-			Util.getMemory().setMemoryAtAddress(address, source);
-			break;
-		case ADDRESS_FF00_C:
-			address = 0xFF00 + getRegister(cpu, REGISTER_C);
-			Util.getMemory().setMemoryAtAddress(address, source);
-			break;
-		case LDH_ADDRESS_FF00: // strange edge cases
-			address = 0xFF00 + source;
-			Util.getMemory().setMemoryAtAddress(address, cpu.getA());
-			break;
-		case LDH_ADDRESS_FF00_REGISTER_A:
-			address = 0xFF00 + source;
-			cpu.setA(Util.getMemory().getMemoryAtAddress(address));
-			break;
-		case REGISTER_F:
-			throw new Exception("Invalid Register Access");
-		default:
-			throw new UnsupportedOperationException("setRegister() missing register " + register.name());
+			case REGISTER_A:
+				source = source & 0xFF;
+				cpu.setA(source);
+				break;
+			case REGISTER_B:
+				source = source & 0xFF;
+				cpu.setB(source);
+				break;
+			case REGISTER_C:
+				source = source & 0xFF;
+				cpu.setC(source);
+				break;
+			case REGISTER_D:
+				source = source & 0xFF;
+				cpu.setD(source);
+				break;
+			case REGISTER_E:
+				source = source & 0xFF;
+				cpu.setE(source);
+				break;
+			case REGISTER_H:
+				source = source & 0xFF;
+				cpu.setH(source);
+				break;
+			case REGISTER_L:
+				source = source & 0xFF;
+				cpu.setL(source);
+				break;
+			case REGISTERS_HL:
+				cpu.setHL(source);
+				break;
+			case REGISTERS_SP:
+				cpu.setSP(source);
+				break;
+			case REGISTERS_BC:
+				cpu.setBC(source);
+				break;
+			case REGISTERS_DE:
+				cpu.setDE(source);
+				break;
+			case REGISTERS_AF:
+				cpu.setAF(source);
+				break;
+			case ADDRESS_HL:
+				address = cpu.getHL();
+				Util.getMemory().setMemoryAtAddress(address, source);
+				break;
+			case ADDRESS_HL_INC:
+				address = cpu.getHL();
+				cpu.setHL(address + 1);
+				Util.getMemory().setMemoryAtAddress(address, source);
+				break;
+			case ADDRESS_HL_DEC:
+				address = cpu.getHL();
+				cpu.setHL(address - 1);
+				Util.getMemory().setMemoryAtAddress(address, source);
+				break;
+			case ADDRESS_A_TO_DATA:
+				address = source;
+				Util.getMemory().setMemoryAtAddress(address, getRegister(cpu, OpCodeRegister.REGISTER_A));
+				break;
+			case ADDRESS_DATA_TO_A:
+				address = source;
+				setRegister(cpu, OpCodeRegister.REGISTER_A, Util.getMemory().getMemoryAtAddress(address));
+				break;
+			case ADDRESS_FF00_C:
+				address = 0xFF00 + getRegister(cpu, REGISTER_C);
+				Util.getMemory().setMemoryAtAddress(address, source);
+				break;
+			case LDH_ADDRESS_FF00: // strange edge cases
+				address = 0xFF00 + source;
+				Util.getMemory().setMemoryAtAddress(address, cpu.getA());
+				break;
+			case LDH_ADDRESS_FF00_REGISTER_A:
+				address = 0xFF00 + source;
+				cpu.setA(Util.getMemory().getMemoryAtAddress(address));
+				break;
+			case REGISTER_F:
+				throw new Exception("Invalid Register Access");
+			default:
+				throw new UnsupportedOperationException("setRegister() missing register " + register.name());
 		}
 	}
 	
@@ -114,52 +133,54 @@ public abstract class OpCode {
 	public int getRegister(GameBoyCPU cpu, OpCodeRegister register) throws Exception {
 		int address;
 		switch (register) {
-		case REGISTER_A:
-			return cpu.getA();
-		case REGISTER_B:
-			return cpu.getB();
-		case REGISTER_C:
-			return cpu.getC();
-		case REGISTER_D:
-			return cpu.getD();
-		case REGISTER_E:
-			return cpu.getE();
-		case REGISTER_H:
-			return cpu.getH();
-		case REGISTER_L:
-			return cpu.getL();
-		case REGISTERS_HL:
-			return cpu.getHL();
-		case REGISTERS_SP:
-			return cpu.getSP();
-		case REGISTERS_BC:
-			return cpu.getBC();
-		case REGISTERS_DE:
-			return cpu.getDE();
-		case REGISTER_F:
-			return cpu.getF();
-		case ADDRESS_HL:
-			address = cpu.getHL();
-			return Util.getMemory().getMemoryAtAddress(address);
-		case ADDRESS_BC:
-			address = cpu.getBC();
-			return Util.getMemory().getMemoryAtAddress(address);
-		case ADDRESS_DE:
-			address = cpu.getDE();
-			return Util.getMemory().getMemoryAtAddress(address);
-		case ADDRESS_HL_INC:
-			address = cpu.getHL();
-			cpu.setHL(address + 1);
-			return Util.getMemory().getMemoryAtAddress(address);
-		case ADDRESS_HL_DEC:
-			address = cpu.getHL();
-			cpu.setHL(address - 1);
-			return Util.getMemory().getMemoryAtAddress(address);
-		case ADDRESS_FF00_C:
-			address = 0xFF00 + getRegister(cpu, REGISTER_C);
-			return Util.getMemory().getMemoryAtAddress(address);
-		default:
-			throw new UnsupportedOperationException("getRegister() missing register " + register.name());
+			case REGISTER_A:
+				return cpu.getA();
+			case REGISTER_B:
+				return cpu.getB();
+			case REGISTER_C:
+				return cpu.getC();
+			case REGISTER_D:
+				return cpu.getD();
+			case REGISTER_E:
+				return cpu.getE();
+			case REGISTER_H:
+				return cpu.getH();
+			case REGISTER_L:
+				return cpu.getL();
+			case REGISTERS_HL:
+				return cpu.getHL();
+			case REGISTERS_SP:
+				return cpu.getSP();
+			case REGISTERS_BC:
+				return cpu.getBC();
+			case REGISTERS_DE:
+				return cpu.getDE();
+			case REGISTERS_AF:
+				return cpu.getAF();
+			case REGISTER_F:
+				return cpu.getF();
+			case ADDRESS_HL:
+				address = cpu.getHL();
+				return Util.getMemory().getMemoryAtAddress(address);
+			case ADDRESS_BC:
+				address = cpu.getBC();
+				return Util.getMemory().getMemoryAtAddress(address);
+			case ADDRESS_DE:
+				address = cpu.getDE();
+				return Util.getMemory().getMemoryAtAddress(address);
+			case ADDRESS_HL_INC:
+				address = cpu.getHL();
+				cpu.setHL(address + 1);
+				return Util.getMemory().getMemoryAtAddress(address);
+			case ADDRESS_HL_DEC:
+				address = cpu.getHL();
+				cpu.setHL(address - 1);
+				return Util.getMemory().getMemoryAtAddress(address);
+			case ADDRESS_FF00_C:
+				address = 0xFF00 + getRegister(cpu, REGISTER_C);
+				return Util.getMemory().getMemoryAtAddress(address);
+			default:
+				throw new UnsupportedOperationException("getRegister() missing register " + register.name());
 		}
 	}
 	
@@ -280,5 +301,10 @@ public abstract class OpCode {
 		int rightByte = Util.getMemory().getMemoryAtAddress(getRegister(cpu, register));
 		setRegister(cpu, register, getRegister(cpu, register) + 1);
 		return (leftByte << 8 | rightByte);
+	}
+
+	@Override
+	public String toString() {
+		return doc;
 	}
 }
