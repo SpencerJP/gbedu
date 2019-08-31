@@ -22,16 +22,16 @@ public class GameBoyMMU {
 	public void initialize(String filename) throws IOException {
 		file = new File(filename); 
 		  
-		FileInputStream fstream = new FileInputStream(file);
+		FileInputStream fStream = new FileInputStream(file);
 		
 		try {
 			this.length = (new Long(file.length())).intValue();
-			fstream.read(memory, 0, (new Long(file.length())).intValue());
+            fStream.read(memory, 0, (new Long(file.length())).intValue());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		finally {
-			fstream.close();
+            fStream.close();
 		}
 	}
 	

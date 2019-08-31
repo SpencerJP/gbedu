@@ -3,20 +3,21 @@ package main;
 import cpu.GameBoyCPU;
 import mmu.GameBoyMMU;
 
+import java.io.IOException;
+
 public class Main {
 	public static void main(String[] args) {
-		int i = 251;
-		byte b = (byte) i;
-		System.out.println(b);
+		GameBoyMMU memory = GameBoyMMU.getInstance();
 		try {
-			GameBoyMMU memory = GameBoyMMU.getInstance();
 			memory.initialize("DMG_ROM.bin");
-			//memory.dump();
-			GameBoyCPU cpu = GameBoyCPU.getInstance();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		//memory.dump();
+		GameBoyCPU cpu = GameBoyCPU.getInstance();
+		try {
 			cpu.run();
-
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}

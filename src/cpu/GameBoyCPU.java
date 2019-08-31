@@ -3,6 +3,7 @@ package cpu;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import cpu.opcodetypes.MissingOpCodeException;
 import cpu.opcodetypes.OpCode;
 import cpu.opcodetypes.OpCodeJump;
 import main.Util;
@@ -47,23 +48,23 @@ public class GameBoyCPU {
 	
 	
 	
-	public void run() {
+	public void run() throws Exception {
 		int cycles = 0;
-		while(getProgramCounter() != 12) {
-			Util.log("next opCode: " + Util.byteToHex(mmu.getMemoryAtAddress(getProgramCounter())));
+		while(getProgramCounter() != 32) {
+			//Util.log("next opCode: " + Util.byteToHex(mmu.getMemoryAtAddress(getProgramCounter())));
 			cycles = runOperation();
-			Util.log("HL: " + Util.byteToHex(h) + " " + Util.byteToHex(l) );
-			Util.log(Util.flagsToString());
+			//Util.log("HL: " + Util.byteToHex(h) + " " + Util.byteToHex(l) );
+			//Util.log(Util.flagsToString());
 		}
 	}
 	
 
-	private int runOperation() {
+	private int runOperation() throws Exception {
 		int cycles = 0;
 		try {
 			OpCode op = opFact.constructOpCode(getProgramCounter(), mmu.getMemoryAtAddress(getProgramCounter()));
 			if (op == null) {
-				throw new UnsupportedOperationException("Opcode " + Util.byteToHex(mmu.getMemoryAtAddress(getProgramCounter())) + " has not been implemented.");
+				throw new MissingOpCodeException(mmu, getProgramCounter());
 			}
 			cycles = op.runCode(this, mmu);
 			if(!isJumping) {
@@ -73,13 +74,17 @@ public class GameBoyCPU {
 				isJumping = false;
 			}
 		}
+		catch(MissingOpCodeException e) {
+			Util.log(Level.SEVERE, e.getMessage());
+			throw new Exception();
+		}
 		catch(UnsupportedOperationException e){
 
-			Util.log(e.getMessage());
-			throw new UnsupportedOperationException();
+			Util.log(Level.SEVERE, e.getMessage());
+			throw new UnsupportedOperationException(e.getMessage());
 		}
 		catch(Exception e) {
-			Util.log(e.getMessage());
+			Util.log(Level.SEVERE, e.getMessage());
 			e.printStackTrace();
 		}
 		return cycles;
@@ -155,7 +160,7 @@ public class GameBoyCPU {
 	}
 
 	public void setProgramCounter(int newAddress) {
-		Util.log(Integer.toString(newAddress));
+		//Util.log(Integer.toString(newAddress));
 		this.programCounter = newAddress;
 	}
 
@@ -219,6 +224,27 @@ public class GameBoyCPU {
 	public int getBC() {
 		return (b << 8 | c);
 				
+	}
+
+	/**
+	 *
+	 * @param data in sixteen bits
+	 */
+	public void pushSP(int data) {
+		int leftByte = (byte)(data & 0xff);
+		int rightByte = (byte)((data >> 8) & 0xFF);
+		setSP(getSP() - 1);
+		Util.getMemory().setMemoryAtAddress(getSP(), leftByte);
+		setSP(getSP() - 1);
+		Util.getMemory().setMemoryAtAddress(getSP(), rightByte);
+	}
+
+	public int popSP() {
+		int leftByte = Util.getMemory().getMemoryAtAddress(getSP());
+		setSP(getSP() + 1);
+		int rightByte = Util.getMemory().getMemoryAtAddress(getSP());
+		setSP(getSP() + 1);
+		return (leftByte << 8 | rightByte);
 	}
 	
 	

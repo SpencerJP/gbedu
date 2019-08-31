@@ -12,13 +12,6 @@ public class OpCodeLD extends OpCode {
 	private int source2 = 0;
 	private OpCodeRegister register;
 	private OpCodeRegister sourceRegister = null;
-	
-	public OpCodeLD(int cycles, int instructionSize,
-			int destAddress, int source) {
-		super(cycles, instructionSize);
-		this.destAddress = destAddress;
-		this.source = source;
-	}
 
 	public OpCodeLD(int cycles, int instructionSize, OpCodeRegister register) {
 		super(cycles, instructionSize);

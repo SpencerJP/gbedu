@@ -5,6 +5,8 @@ import cpu.opcodetypes.enums.OpCodeRegister;
 import main.Util;
 import mmu.GameBoyMMU;
 
+import static cpu.opcodetypes.enums.OpCodeRegister.REGISTER_C;
+
 public abstract class OpCode {
 
 
@@ -75,6 +77,10 @@ public abstract class OpCode {
 		case REGISTERS_DE:
 			cpu.setDE(data);
 			break;
+		case ADDRESS_HL:
+			address = cpu.getHL();
+			Util.getMemory().setMemoryAtAddress(address, source);
+			break;
 		case ADDRESS_HL_INC:
 			address = cpu.getHL();
 			cpu.setHL(address + 1);
@@ -85,10 +91,22 @@ public abstract class OpCode {
 			cpu.setHL(address - 1);
 			Util.getMemory().setMemoryAtAddress(address, source);
 			break;
+		case ADDRESS_FF00_C:
+			address = 0xFF00 + getRegister(cpu, REGISTER_C);
+			Util.getMemory().setMemoryAtAddress(address, source);
+			break;
+		case LDH_ADDRESS_FF00: // strange edge cases
+			address = 0xFF00 + source;
+			Util.getMemory().setMemoryAtAddress(address, cpu.getA());
+			break;
+		case LDH_ADDRESS_FF00_REGISTER_A:
+			address = 0xFF00 + source;
+			cpu.setA(Util.getMemory().getMemoryAtAddress(address));
+			break;
 		case REGISTER_F:
 			throw new Exception("Invalid Register Access");
 		default:
-			throw new UnsupportedOperationException("Not implemented?");
+			throw new UnsupportedOperationException("setRegister() missing register " + register.name());
 		}
 	}
 	
@@ -137,8 +155,11 @@ public abstract class OpCode {
 			address = cpu.getHL();
 			cpu.setHL(address - 1);
 			return Util.getMemory().getMemoryAtAddress(address);
+		case ADDRESS_FF00_C:
+			address = 0xFF00 + getRegister(cpu, REGISTER_C);
+			return Util.getMemory().getMemoryAtAddress(address);
 		default:
-			throw new UnsupportedOperationException("Not implemented?");
+			throw new UnsupportedOperationException("getRegister() missing register " + register.name());
 		}
 	}
 	
@@ -235,5 +256,29 @@ public abstract class OpCode {
 		setFlagH(h);
 		setFlagN(n);
 		setFlagZ(z);
+	}
+
+	/**
+	 *
+	 * @param cpu
+	 * @param register careful because this is unchecked, can be used with any register depspite only intended for
+	 * @param data
+	 * @throws Exception
+	 */
+	public void push(GameBoyCPU cpu, OpCodeRegister register, int data) throws Exception {
+		int leftByte = (byte)(data & 0xff);
+		int rightByte = (byte)((data >> 8) & 0xFF);
+		setRegister(cpu, register, getRegister(cpu, register) - 1);
+		Util.getMemory().setMemoryAtAddress(getRegister(cpu, register), leftByte);
+		setRegister(cpu, register, getRegister(cpu, register) - 1);
+		Util.getMemory().setMemoryAtAddress(getRegister(cpu, register), rightByte);
+	}
+
+	public int pop(GameBoyCPU cpu, OpCodeRegister register) throws Exception {
+		int leftByte = Util.getMemory().getMemoryAtAddress(getRegister(cpu, register));
+		setRegister(cpu, register, getRegister(cpu, register) + 1);
+		int rightByte = Util.getMemory().getMemoryAtAddress(getRegister(cpu, register));
+		setRegister(cpu, register, getRegister(cpu, register) + 1);
+		return (leftByte << 8 | rightByte);
 	}
 }

@@ -33,8 +33,11 @@ public class OpCodeJump extends OpCode {
 			destAddress = (destAddress << 8) | destAddress2;
 		} else if(jumpType == JumpType.ADD_TO_ADDRESS) {
 			byte jumpLength = (byte) getRelativeMemory(cpu, 1);
-			System.out.println(jumpLength);
 			destAddress = Util.getCPU().getProgramCounter() + jumpLength; // this value is a signed byte
+		} else if(jumpType == JumpType.CALL) {
+			destAddress = getRelativeMemory(cpu, 2);
+			destAddress2 = getRelativeMemory(cpu, 1);
+			destAddress = (destAddress << 8) | destAddress2;
 		}
 		if(condition != null) {
 			switch(condition) {
@@ -60,13 +63,22 @@ public class OpCodeJump extends OpCode {
 				return 8;
 				
 			}
-
+			if (jumpType == JumpType.CALL) {
+				Util.getCPU().pushSP(Util.getCPU().getProgramCounter() + getInstructionSize());
+				cpu.setProgramCounter(destAddress);
+				cpu.isJumping = true;
+				return 24;
+			}
 			cpu.setProgramCounter(destAddress);
-			//cpu.isJumping = true;
 			return 12;
 		}
+		if (jumpType == JumpType.CALL) {
+			Util.getCPU().pushSP(Util.getCPU().getProgramCounter() + getInstructionSize());
+			cpu.setProgramCounter(destAddress);
+			cpu.isJumping = true;
+			return 24;
+		}
 		cpu.setProgramCounter(destAddress);
-		//cpu.isJumping = true;
 		return 12;
 	}
 

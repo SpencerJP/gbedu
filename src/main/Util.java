@@ -20,6 +20,10 @@ public class Util {
 	public static void log(String s) {
 		logger.log(Level.INFO, s);
 	}
+
+	public static void log(Level l, String s) {
+		logger.log(l, s);
+	}
 	
 	public static String byteToHex(byte num) {
 		char[] hexDigits = new char[2];
