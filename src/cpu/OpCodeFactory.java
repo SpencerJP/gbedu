@@ -37,6 +37,7 @@ public class OpCodeFactory {
 		primaryOpCodeMap.put("13", new OpCodeMath("INC DE", 4, 1, OpCodeFunction.INC_16, OpCodeRegister.REGISTERS_DE));
 		primaryOpCodeMap.put("23", new OpCodeMath("INC HL", 4, 1, OpCodeFunction.INC_16, OpCodeRegister.REGISTERS_HL));
 		primaryOpCodeMap.put("24", new OpCodeMath("INC H", 4, 1, OpCodeFunction.INC, OpCodeRegister.REGISTER_H));
+		primaryOpCodeMap.put("0c", new OpCodeMath("INC C", 4, 1, OpCodeFunction.INC, OpCodeRegister.REGISTER_C));
 
 		//DEC
 		primaryOpCodeMap.put("05", new OpCodeMath("DEC B", 4, 1, OpCodeFunction.DEC, OpCodeRegister.REGISTER_B));
@@ -47,6 +48,7 @@ public class OpCodeFactory {
 
 		//CP
 		primaryOpCodeMap.put("fe", new OpCodeMath("CP d8", 8, 2, OpCodeFunction.CP));
+		primaryOpCodeMap.put("be", new OpCodeMath("CP (HL))", 8, 1, OpCodeFunction.CP, OpCodeRegister.ADDRESS_HL));
 
 		//SUB
 		primaryOpCodeMap.put("90", new OpCodeMath("SUB B", 4, 1, OpCodeFunction.SUB, OpCodeRegister.REGISTER_B));
@@ -111,7 +113,7 @@ public class OpCodeFactory {
 
 
 		primaryOpCodeMap.put("e0", new OpCodeLD("LDH ($FF00+a8), A",12, 2, OpCodeRegister.LDH_ADDRESS_FF00));
-		primaryOpCodeMap.put("e2", new OpCodeLD("LD (C), A",8, 2, OpCodeRegister.ADDRESS_FF00_C, OpCodeRegister.REGISTER_A));
+		primaryOpCodeMap.put("e2", new OpCodeLD("LD ($FF00+C), A",8, 1, OpCodeRegister.ADDRESS_FF00_C, OpCodeRegister.REGISTER_A));
 		primaryOpCodeMap.put("ea", new OpCodeLD("LD (a16), A",16, 3, OpCodeRegister.ADDRESS_A_TO_DATA));
 		primaryOpCodeMap.put("fa", new OpCodeLD("LD A,(a16)",16, 3, OpCodeRegister.ADDRESS_DATA_TO_A));
 		primaryOpCodeMap.put("f0", new OpCodeLD("LDH a, ($FF00+a8)",12, 2, OpCodeRegister.LDH_ADDRESS_FF00_REGISTER_A));

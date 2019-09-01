@@ -129,24 +129,29 @@ public class GameBoyGPU implements Runnable {
 
         }
     }
-
+    private static int testint = 0;
     private void renderScan() {
         int mapOffset = (GpuRegisters.getBackgroundTilemap() == 1) ? 0x9C00 : 0x9800;
 
         int line = GpuRegisters.getCurrentScanline();
+        int scrollX = GpuRegisters.getScrollX();
+        int scrollY = GpuRegisters.getScrollY();
+        if(scrollY == 100) {
+            scrollY = scrollY - testint++;
+        }
 
-        mapOffset += ((line + GpuRegisters.getScrollY()) & 255) >> 3;
+        mapOffset += ((line + scrollY) & 255) >> 3;
 
-        int lineOffset = (GpuRegisters.getScrollX() >> 3);
+        int lineOffset = (scrollX >> 3);
 
-        int y = (line + GpuRegisters.getScrollY()) & 7;
+        int y = (line + scrollY) & 7;
 
-        int x = GpuRegisters.getScrollX() & 7;
+        int x = scrollX & 7;
 
        int canvasOffSet = (line * WIDTH_PIXELS);
 
         Color color;
-        System.out.println("mapOffset=" + Util.byteToHex16(mapOffset) + ", lineOffset="+lineOffset);
+        System.out.println("mapOffset=" + Util.byteToHex16(mapOffset) + ", lineOffset="+lineOffset + " bgTileset?:"+GpuRegisters.getBackgroundTileset());
         int tile = vram[mapOffset + lineOffset];
 
         if(GpuRegisters.getBackgroundTileset() == 1 && tile < 128) {

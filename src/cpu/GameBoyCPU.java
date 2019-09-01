@@ -169,6 +169,7 @@ public class GameBoyCPU {
 	}
 
 	public void setProgramCounter(int newAddress) {
+		System.out.println("moving from " + Util.byteToHex(programCounter) + " to " + Util.byteToHex(newAddress));
 		this.programCounter = newAddress;
 	}
 
