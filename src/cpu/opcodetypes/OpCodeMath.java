@@ -69,6 +69,16 @@ public class OpCodeMath extends OpCode {
 				setFlagH(hFlag);
 				setFlagC(cFlag);
 				break;
+			case SUB:
+				if (register == null) {
+					source = getRelativeMemory(cpu, 1);
+				}
+				accum = getAccumulator();
+				setAccumulator(cpu, ((accum - source) & 0xff));
+				setFlagZ(((accum - source) & 0xff) == 0);
+				setFlagN(true);
+				setFlagH((0x0f & source) > (0x0f & accum));
+				setFlagC(source > accum);
 			case PUSH:
 				cpu.pushSP(getRegister(cpu, register));
 				break;
@@ -100,8 +110,6 @@ public class OpCodeMath extends OpCode {
 					source = getRelativeMemory(cpu, 1);
 				}
 				accum = getAccumulator();
-				System.out.println("accum: " + accum + ", source:" + source);
-				System.out.println(((accum - source) & 0xff) == 0);
 				setFlagZ(((accum - source) & 0xff) == 0);
 				setFlagN(true);
 				setFlagH((0x0f & source) > (0x0f & accum));

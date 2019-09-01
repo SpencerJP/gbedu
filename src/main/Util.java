@@ -11,7 +11,7 @@ public class Util {
 
 	public static Logger logger = Logger.getLogger("GameBoy");
 	static {
-		logger.setLevel(Level.INFO);
+		logger.setLevel(Level.SEVERE);
 	}
 
 	public static Logger getLogger() {
@@ -30,6 +30,14 @@ public class Util {
 		char[] hexDigits = new char[2];
 		hexDigits[0] = Character.forDigit((num >> 4) & 0xF, 16);
 		hexDigits[1] = Character.forDigit((num & 0xF), 16);
+		return new String(hexDigits);
+	}
+	public static String byteToHex16(int num) {
+		char[] hexDigits = new char[4];
+		hexDigits[0] = Character.forDigit((num >> 12) & 0xF, 16);
+		hexDigits[1] = Character.forDigit((num >> 8) & 0xF, 16);
+		hexDigits[2] = Character.forDigit((num >> 4) & 0xF, 16);
+		hexDigits[3] = Character.forDigit((num & 0xF), 16);
 		return new String(hexDigits);
 	}
 

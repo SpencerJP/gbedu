@@ -54,12 +54,25 @@ public class GameBoyCPU {
 	public void run() throws Exception {
 		int cycles = 0;
 		GameBoyGPU gpu = GameBoyGPU.getInstance();
+		boolean runOnce = true;
 		while(true) {
 			cycles = runOperation();
 			gpu.addClockTime(cycles);
-            gpu.run();
+			gpu.run();
+//			if (programCounter == 0xc) {
+//				System.out.println("Zeroed VRAM");
+//			}
+			if(runOnce && programCounter == 0x34) {
+//				gpu.dumpVram();
+				gpu.dumpTileset();
+				runOnce = false;
+			}
+            //Util.log(gpu.mode.name());
+			//Util.log("GPU Clock=" + gpu.clock);
+
+			//Thread.sleep(0300);
 			//Util.log("HL: " + Util.byteToHex(h) + " " + Util.byteToHex(l) );
-			Util.log(Util.flagsToString());
+			//Util.log(Util.flagsToString());
 		}
 	}
 	

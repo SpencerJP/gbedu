@@ -4,6 +4,7 @@ public enum OpCodeFunction {
 	XOR,
 	AND,
 	ADD,
+	SUB,
 	OR,
 	CP,
 	INC,

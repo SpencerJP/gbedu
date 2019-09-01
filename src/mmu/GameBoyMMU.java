@@ -10,9 +10,9 @@ import main.Util;
 
 public class GameBoyMMU {
 	
+	private File bootrom;
 	private File file;
 	private int[] memory;
-	private int length = -1;
 	private static GameBoyMMU singletonInstance;
 	
 	private GameBoyMMU() {
@@ -20,14 +20,18 @@ public class GameBoyMMU {
 	}
 	
 	public void initialize(String filename) throws IOException {
-		file = new File(filename); 
+		bootrom = new File("DMG_ROM.bin");
+		file = new File(filename);
 		  
-		FileInputStream fStream = new FileInputStream(file);
+		FileInputStream fStream = new FileInputStream(bootrom);
+		FileInputStream fStream2 = new FileInputStream(file);
 		
 		try {
-			this.length = (new Long(file.length())).intValue();
 			byte[] buff = new byte[65536];
-            fStream.read(buff, 0, (new Long(file.length())).intValue());
+			int bootromLength = (new Long(bootrom.length())).intValue();
+            fStream.read(buff, 0, bootromLength);
+			int loadromLength = (new Long(file.length())).intValue();
+			fStream2.read(buff, 256, loadromLength);
             for(int i = 0; i < buff.length; i++) {
             	memory[i] = buff[i];
 			}
@@ -41,7 +45,6 @@ public class GameBoyMMU {
 	}
 
 	private void powerUp() {
-		memory[0xff44] = 0x90;
 	}
 
 	public static GameBoyMMU getInstance() {
@@ -59,10 +62,6 @@ public class GameBoyMMU {
 	public int[] getMemory() {
 		return memory;
 	}
-
-	public int getLength() {
-		return length;
-	}
 	
 	public void dump() {
 		for(int b : memory) {
@@ -74,6 +73,7 @@ public class GameBoyMMU {
 		switch(address & 0xF000) {
 			case 0x8000:
 			case 0x9000:
+				//System.out.println("$" + Util.byteToHex16(address).toUpperCase() + ": $" + Util.byteToHex(source).toUpperCase());
 				Util.getGPU().setVRAM(address, source);
 				Util.getGPU().updateTile(address);
 				memory[address] = source;

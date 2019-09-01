@@ -1,0 +1,49 @@
+package gpu;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.util.Arrays;
+
+public class GameBoyLCD extends JPanel {
+
+    private BufferedImage canvas;
+
+    public GameBoyLCD(int width, int height) {
+        canvas = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+
+    }
+
+    public Dimension getPreferredSize() {
+        return new Dimension(canvas.getWidth(), canvas.getHeight());
+    }
+
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        Graphics2D g2 = (Graphics2D) g;
+        g2.drawImage(canvas, null, null);
+    }
+
+    public void drawData(Color[] pixels) {
+        int x = 0;
+        int y = 0;
+        if (pixels[0] == null) {
+            return;
+        }
+        for(Color c : pixels) {
+            if(x == GameBoyGPU.WIDTH_PIXELS) {
+                x = 0;
+                y++;
+            }
+            try {
+                canvas.setRGB(x, y, c.getRGB());
+            }
+            catch(Exception e) {
+                Arrays.toString(pixels);
+            }
+            x++;
+        }
+        repaint();
+    }
+}

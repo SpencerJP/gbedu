@@ -15,10 +15,11 @@ public class GameBoyGPU implements Runnable {
     private static final int SCAN_VRAM_TIME = 172;
     private static final int HBLANK_TIME = 204;
     private static final int VBLANK_TIME = 456;
-    private static final int WIDTH_PIXELS = 160;
-    private static final int HEIGHT_PIXELS = 144;
+    public static final int WIDTH_PIXELS = 160;
+    public static final int HEIGHT_PIXELS = 144;
     private static final int TILE_COUNT = 384;
     private static final int TILE_PIXEL_SIZE = 8;
+
 
 
     private static final Color DARKEST_GREEN = new Color(15, 56, 15);
@@ -27,29 +28,31 @@ public class GameBoyGPU implements Runnable {
     private static final Color LIGHTEST_GREEN = new Color(155, 188, 15);
     private static final Color[] baseColoursGB = new Color[4];
     static {
-        baseColoursGB[0] = DARKEST_GREEN;
-        baseColoursGB[1] = DARK_GREEN;
-        baseColoursGB[2] = LIGHT_GREEN;
-        baseColoursGB[3] = LIGHTEST_GREEN;
+        baseColoursGB[0] = LIGHTEST_GREEN;
+        baseColoursGB[1] = LIGHT_GREEN;
+        baseColoursGB[2] = DARK_GREEN;
+        baseColoursGB[3] = DARKEST_GREEN;
     }
 
 
     private JFrame frame;
-    private JPanel screen;
-    private GpuModes mode;
-    private int clock = 0;
-    private int line = 0;
+    private GameBoyLCD screen;
+    public GpuModes mode;
+    public int clock = 0;
     private int[][][] tileset = new int[TILE_COUNT][TILE_PIXEL_SIZE][TILE_PIXEL_SIZE];
-    private Color[][] pixels = new Color[WIDTH_PIXELS][HEIGHT_PIXELS];
+    private Color[] pixels = new Color[WIDTH_PIXELS*HEIGHT_PIXELS]; // long array of pixels. Wrapping is handled in code
     private int[] vram = new int[65536];
     private boolean LCDEnabled;
+    private int bgTileBase = 0x0000;
+    private int bgMapBase = 0x1800;
+    private int winTileBase = 0x1800;
 
     private GameBoyGPU() {
         frame= new JFrame("Gameboy");
-        screen=new JPanel();
-        screen.setBounds(WIDTH_PIXELS,HEIGHT_PIXELS,WIDTH_PIXELS,HEIGHT_PIXELS);
+        screen=new GameBoyLCD(WIDTH_PIXELS, HEIGHT_PIXELS);
+        screen.setBounds(0,0,WIDTH_PIXELS,HEIGHT_PIXELS);
         frame.add(screen);
-        frame.setSize(WIDTH_PIXELS+50,HEIGHT_PIXELS+50);
+        frame.setSize(WIDTH_PIXELS+20,HEIGHT_PIXELS + 40);
         frame.setLayout(null);
         frame.setVisible(true);
 
@@ -59,7 +62,7 @@ public class GameBoyGPU implements Runnable {
                 System.exit(0);
             }
         });
-        mode = GpuModes.HBLANK;
+        mode = GpuModes.SCANLINE_OAM;
     }
 
 
@@ -72,10 +75,7 @@ public class GameBoyGPU implements Runnable {
     }
 
     public void enableLCD() {
-        GameBoyMMU mmu = Util.getMemory();
-        int lCDCRegister = mmu.getMemoryAtAddress(0xff44);
-        lCDCRegister = Util.setBit(lCDCRegister, 0);
-        mmu.setMemoryAtAddress(0xff44, lCDCRegister);
+        GpuRegisters.setDisplayOn(true);
         this.LCDEnabled = true;
     }
 
@@ -103,8 +103,8 @@ public class GameBoyGPU implements Runnable {
             case HBLANK:
                 if(clock >= HBLANK_TIME) {
                     clock = 0;
-                    line++;
-                    if(line == WIDTH_PIXELS - 1)
+                    GpuRegisters.incrementScanLine();
+                    if(GpuRegisters.getCurrentScanline() == HEIGHT_PIXELS - 1)
                     {
                         mode = GpuModes.VBLANK;
                         drawData();
@@ -118,11 +118,11 @@ public class GameBoyGPU implements Runnable {
             case VBLANK:
                 if(clock >= VBLANK_TIME) {
                     clock = 0;
-                    line++;
-                    if(line > 153)
+                    GpuRegisters.incrementScanLine();
+                    if(GpuRegisters.getCurrentScanline() > 153)
                     {
                         mode = GpuModes.SCANLINE_OAM;
-                        line = 0;
+                        GpuRegisters.setCurrentScanline(0);
                     }
                 }
                 break;
@@ -131,11 +131,55 @@ public class GameBoyGPU implements Runnable {
     }
 
     private void renderScan() {
+        int mapOffset = (GpuRegisters.getBackgroundTilemap() == 1) ? 0x9C00 : 0x9800;
 
+        int line = GpuRegisters.getCurrentScanline();
+
+        mapOffset += ((line + GpuRegisters.getScrollY()) & 255) >> 3;
+
+        int lineOffset = (GpuRegisters.getScrollX() >> 3);
+
+        int y = (line + GpuRegisters.getScrollY()) & 7;
+
+        int x = GpuRegisters.getScrollX() & 7;
+
+       int canvasOffSet = (line * WIDTH_PIXELS);
+
+        Color color;
+        System.out.println("mapOffset=" + Util.byteToHex16(mapOffset) + ", lineOffset="+lineOffset);
+        int tile = vram[mapOffset + lineOffset];
+
+        if(GpuRegisters.getBackgroundTileset() == 1 && tile < 128) {
+            tile += 256;
+        }
+        for(int i = 0; i < WIDTH_PIXELS; i++)
+        {
+            // Re-map the tile pixel through the palette
+            color = baseColoursGB[tileset[tile][y][x]];
+
+            // Plot the pixel to canvas
+            if (color != baseColoursGB[0]) {
+            }
+            pixels[canvasOffSet] = color;
+
+            canvasOffSet++; // next pixel
+
+            // When this tile ends, read another
+            x++;
+            if(x == 8)
+            {
+                x = 0;
+                lineOffset = (lineOffset + 1) & 31;
+                tile = vram[mapOffset + lineOffset];
+                if (GpuRegisters.getBackgroundTileset() == 1 && tile < 128) {
+                    tile += 256;
+                }
+            }
+        }
     }
 
     private void drawData() {
-
+        screen.drawData(pixels);
     }
 
     public void addClockTime(int cycles) {
@@ -147,8 +191,6 @@ public class GameBoyGPU implements Runnable {
     }
 
     public void updateTile(int address) {
-        address &= 0x1FFE;
-
         // Work out which tile and row was updated
         int tileNum = (address >> 4) & 0xFF;
         int y = (address >> 1) & 7;
@@ -160,11 +202,52 @@ public class GameBoyGPU implements Runnable {
             sx = 1 << (7-x);
 
             // Update tile set
-            tileset[tileNum][y][x] = ((vram[address] & sx) != 0) ? 1 : 0 + (((vram[address +1] & sx) != 0) ? 2 : 0);
+            //System.out.println("test");
+            int color1 = (vram[address] & sx) != 0 ? 1 : 0;
+            int color2 = (vram[address + 1] & sx) != 0 ? 2 : 0;
+            //System.out.println("tileNum: " + tileNum + ", x: " + x + ", y: " + y + ", color: " + (color1 + color2));
+            tileset[tileNum][y][x] = color1 + color2;
         }
     }
 
     public void resetTiles() {
         tileset = new int[TILE_COUNT][TILE_PIXEL_SIZE][TILE_PIXEL_SIZE];
+    }
+
+    public void dumpVram() {
+        String s = "VRAM DUMP:\n";
+        int j = 0;
+        for(int i = 0x8000; i < 0x9fff; i++) {
+            if (vram[i] != 0) {
+                if (j == 15) {
+                    j = 0;
+                    s = s + "\n";
+                }
+                s = s + Util.byteToHex(i) + " = " + vram[i] + " ";
+                j++;
+            }
+        }
+        System.out.println(s);
+    }
+
+    public void dumpTileset() {
+        String s = "TILESET DUMP:\n";
+        int z = 0;
+        for(int i = 0; i < tileset.length; i++) {
+            for(int j = 0; j < 8; j++) {
+                for(int k = 0; k < 8; k++) {
+                    if (tileset[i][j][k] != 0) {
+                        if (z == 15) {
+                            z = 0;
+                            s = s + "\n";
+                        }
+                        s = s + i + " = " + tileset[i][j][k] + " ";
+                        z++;
+                    }
+                }
+            }
+
+        }
+        System.out.println(s);
     }
 }

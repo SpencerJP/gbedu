@@ -12,7 +12,9 @@ public class Main {
 		GameBoyGPU gpu = GameBoyGPU.getInstance();
         GameBoyCPU cpu = GameBoyCPU.getInstance();
 		try {
-			memory.initialize("DMG_ROM.bin");
+			memory.initialize("test_tetris.gb");
+
+			//System.out.println(memory.getMemoryAtAddress(0x104));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
