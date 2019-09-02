@@ -62,10 +62,19 @@ public class GameBoyCPU {
 //			if (programCounter == 0xc) {
 //				System.out.println("Zeroed VRAM");
 //			}
-			if(runOnce && programCounter == 0x34) {
+			if(runOnce && programCounter == 0x53) {
 //				gpu.dumpVram();
-				gpu.dumpTileset();
+			    //gpu.dumpTileset();
+				gpu.dumpBackgroundTilemap(0);
+				//gpu.dumpBackgroundTilemap(1);
+				//gpu.printBackgroundTilemap(0);
+				gpu.printTile( 0x9910);
+				gpu.printTile( 0, 0x18);
 				runOnce = false;
+			}
+
+			if(programCounter == 0x42) {
+				//System.out.println(Util.byteToHex(a));
 			}
             //Util.log(gpu.mode.name());
 			//Util.log("GPU Clock=" + gpu.clock);
@@ -169,7 +178,7 @@ public class GameBoyCPU {
 	}
 
 	public void setProgramCounter(int newAddress) {
-		System.out.println("moving from " + Util.byteToHex(programCounter) + " to " + Util.byteToHex(newAddress));
+		//System.out.println("moving from " + Util.byteToHex(programCounter) + " to " + Util.byteToHex(newAddress));
 		this.programCounter = newAddress;
 	}
 

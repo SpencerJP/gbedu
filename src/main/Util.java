@@ -11,7 +11,7 @@ public class Util {
 
 	public static Logger logger = Logger.getLogger("GameBoy");
 	static {
-		logger.setLevel(Level.INFO);
+		logger.setLevel(Level.OFF);
 	}
 
 	public static Logger getLogger() {

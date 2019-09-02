@@ -102,11 +102,11 @@ public abstract class OpCode {
 				cpu.setHL(address - 1);
 				Util.getMemory().setMemoryAtAddress(address, source);
 				break;
-			case ADDRESS_A_TO_DATA:
+			case A_TO_ADDRESS:
 				address = source;
 				Util.getMemory().setMemoryAtAddress(address, getRegister(cpu, OpCodeRegister.REGISTER_A));
 				break;
-			case ADDRESS_DATA_TO_A:
+			case ADDRESS_TO_A:
 				address = source;
 				setRegister(cpu, OpCodeRegister.REGISTER_A, Util.getMemory().getMemoryAtAddress(address));
 				break;

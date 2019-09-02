@@ -39,6 +39,8 @@ public class OpCodeLD extends OpCode {
 			case REGISTERS_HL:
 			case REGISTERS_BC:
 			case REGISTERS_DE:
+			case A_TO_ADDRESS:
+			case ADDRESS_TO_A:
 				source = getRelativeMemory(cpu,2);
 				source2 = getRelativeMemory(cpu,1);
 				source = (source << 8) | source2;
