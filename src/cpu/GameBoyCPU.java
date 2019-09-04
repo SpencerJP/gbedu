@@ -7,6 +7,7 @@ import cpu.opcodetypes.MissingOpCodeException;
 import cpu.opcodetypes.OpCode;
 import cpu.opcodetypes.OpCodeJump;
 import gpu.GameBoyGPU;
+import gpu.GpuRegisters;
 import main.Util;
 import mmu.GameBoyMMU;
 
@@ -53,6 +54,7 @@ public class GameBoyCPU {
 	
 	public void run() throws Exception {
 		int cycles = 0;
+		int prevScrollY = 0;
 		GameBoyGPU gpu = GameBoyGPU.getInstance();
 		boolean runOnce = true;
 		while(true) {
@@ -62,16 +64,23 @@ public class GameBoyCPU {
 //			if (programCounter == 0xc) {
 //				System.out.println("Zeroed VRAM");
 //			}
+
+//			if (GpuRegisters.getScrollY() != prevScrollY) {
+//				prevScrollY = GpuRegisters.getScrollY();
+//				System.out.println(prevScrollY);
+//			}
+
 			if(runOnce && programCounter == 0x55) {
-				gpu.dumpVram();
+				//gpu.dumpVram();
 //			    gpu.dumpTileset();
-//				gpu.dumpBackgroundTilemap(0);
-//			gpu.dumpSetBackgroundTilemap(0);
+				gpu.dumpBackgroundTilemap(0);
+//				gpu.dumpSetBackgroundTilemap(0);
 //				gpu.printBackgroundTilemap(0);
-//				int[] tileSpots = {0x19, 0x0d, 0x0e, 0x0f, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18};
-//				for(int i = 0; i < tileSpots.length; i++) {
-//					gpu.printTile(tileSpots[i]);
-//				}
+				int[] tileSpots = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x19, 0x0d, 0x0e, 0x0f, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18};
+				for(int i = 0; i < tileSpots.length; i++) {
+					gpu.printTile(tileSpots[i]);
+				}
+
 				//gpu.printTile( 0x9910);
 				//gpu.printTile( 0, 0x18);
 				runOnce = false;

@@ -43,7 +43,7 @@ public class GameBoyGPU implements Runnable {
     public int clock = 0;
     private int[][][] tileset = new int[TILE_COUNT][TILE_PIXEL_SIZE][TILE_PIXEL_SIZE];
     private Color[] pixels = new Color[WIDTH_PIXELS*HEIGHT_PIXELS]; // long array of pixels. Wrapping is handled in code
-    private int[] vram = new int[0x2000];
+    private int[] vram = new int[65536];
     private boolean LCDEnabled;
 //    private int bgTileBase = 0x0000;
 //    private int bgMapBase = 0x1800;
@@ -139,11 +139,16 @@ public class GameBoyGPU implements Runnable {
         int bgTileset = GpuRegisters.getBackgroundTileset();
         int line = GpuRegisters.getCurrentScanline();
         int scrollX = GpuRegisters.getScrollX();
-        int scrollY = GpuRegisters.getScrollY();
+//        int scrollY = GpuRegisters.getScrollY();
+        int scrollY = 0;
         //GpuRegisters.setScrollY((scrollY == 255) ? 0 : scrollY + 1);
-        int mapOffset = bgTilemap == 1 ? 0x1C00 : 0x1800; 
+        int mapOffset = bgTilemap == 1 ? 0x9C00 : 0x9800;
         //System.out.println((line + scrollY));
-        mapOffset = mapOffset + (((line + scrollY) & 0xFF) >> 3);
+
+        mapOffset = mapOffset + (((line + scrollY & 0xFF) >> 3) * 32);
+        //System.out.println((((line + scrollY & 0xFF) >> 3) * 32));
+        //System.out.println(Util.byteToHex16(Util.getMemory().getMemoryAtAddress(0x9904)));
+        //System.out.println(Util.byteToHex16(((scrollY & 0xFF) >> 3) * 31) + " wanted value: ~0x" + Util.byteToHex16(0x0104)); // wanted value
        // System.out.println(mapOffset);
         //mapOffset += 0x12f;
 
@@ -156,12 +161,14 @@ public class GameBoyGPU implements Runnable {
         int canvasOffSet = (line * WIDTH_PIXELS);
 
         Color color;
+        //System.out.println(Util.byteToHex16(mapOffset + lineOffset));
         int tile = vram[mapOffset + lineOffset];
         if(bgTileset == 1 && tile < 128) {
             tile += 256;
         }
         for(int i = 0; i < WIDTH_PIXELS; i++)
         {
+            //System.out.println(Util.byteToHex16(tile));
             color = baseColoursGB[tileset[tile][y][x]];
             pixels[canvasOffSet] = color;
 
@@ -171,7 +178,7 @@ public class GameBoyGPU implements Runnable {
             if(x == 8)
             {
                 x = 0;
-                lineOffset = (lineOffset + 1) & 31;
+                lineOffset = (lineOffset + 1) & 0x1f;
                 tile = vram[mapOffset + lineOffset];
                 if (bgTileset == 1 && tile < 128) {
                     tile += 256;
@@ -193,35 +200,21 @@ public class GameBoyGPU implements Runnable {
     }
 
     public void updateTile(int address) {
-    	address &= 0x1FFE;
         // Work out which tile and row was updated
         int tileNum = (address >> 4) & 0xFF;
         int y = (address >> 1) & 7;
 
         int sx;
-//      int debug_nonWhitePixels = 0;
         for(int x = 0; x < 8; x++)
         {
             // Find bit index for this pixel
             sx = 1 << (7-x);
 
             // Update tile set
-            //System.out.println("test");
             int color1 = (vram[address] & sx) != 0 ? 1 : 0;
             int color2 = (vram[address + 1] & sx) != 0 ? 2 : 0;
-//            if ((color1 + color2) > 0) {
-//            	
-//            	debug_nonWhitePixels++;
-//            }
-            //System.out.println("tileNum: " + tileNum + ", x: " + x + ", y: " + y + ", color: " + (color1 + color2));
             tileset[tileNum][y][x] = color1 + color2;
-//            if (debug_nonWhitePixels > 0) {
-//            	System.out.println("tileset["+Util.byteToHex(tileNum)+"]["+y+"]["+x+"] = " + tileset[tileNum][y][x]);
-//            	System.out.println("testPrint -> " + debug_nonWhitePixels + " set pixels");
-//            	printTile(0x19);
-//            }
-            
-            //System.out.println("tile " + Util.byteToHex(tileNum) + " is set, " + debug_nonWhitePixels + " nonWhitePixels -> " + Util.byteToHex(Util.getCPU().getProgramCounter()));
+
         }
     }
 
@@ -272,15 +265,37 @@ public class GameBoyGPU implements Runnable {
         int startPos = (tilemapNum == 1) ? 0x9C00 : 0x9800;
         int endPos = (tilemapNum == 1) ? 0x9FFF : 0x9C00;
         int z = 0;
-        int j = 0;
+        int j = 1;
+        s = s + "    ";
+        int line1chars = 0;
+        for(int i = 0; i < 32; i++) {
+            if ( i < 10) {
+                s = s + " " + i + " ";
+            }
+            else {
+                s = s + i + " ";
+            }
+            line1chars += 3;
+        }
+        s = s + "\n     ";
+        for(int i = 0; i < line1chars; i++) {
+            s = s + "-";
+        }
+        s = s + "\n0-> ";
         for(int i =startPos; i < endPos; i++) {
             if(z == 32) {
                 z = 0;
                 s = s + "\n";
-                s = s + j + "->";
-                j++;
+                if( j >= 10) {
+                    s = s + j + "->";
+                    j++;
+                }
+                else {
+                    s = s + j + "-> ";
+                    j++;
+                }
             }
-            s = s + Util.byteToHex(Util.getMemory().getMemoryAtAddress(i));
+            s = s + Util.byteToHex(Util.getMemory().getMemoryAtAddress(i)) + " ";
             z++;
         }
         System.out.println(s);
@@ -332,12 +347,12 @@ public class GameBoyGPU implements Runnable {
     }
 
     public void printTile(int tileNum) {
-        //tileNum = (tileNum >> 4) & 0xFF;
+        System.out.println("TILE DUMP: 0x" + Util.byteToHex16(tileNum) + "\n");
         String output = "";
         for(int i = 0; i < 8; i++) {
             for(int j = 0; j < 8; j++) {
             	//System.out.println(Arrays.toString(tileset[tileNum]));
-            	String character = (tileset[tileNum][i][j] == 1) ? "\u25a0" : " " ;
+            	String character = (tileset[tileNum][i][j] == 1) ? "\u2588" : " " ;
                 output = output + character;
             }
             output = output + "\n";

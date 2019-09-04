@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 
+import bootrom.BootRom;
 import main.Util;
 
 
@@ -13,25 +14,25 @@ public class GameBoyMMU {
 	private File bootrom;
 	private File file;
 	private int[] memory;
+	private boolean disableBootrom;
 	private static GameBoyMMU singletonInstance;
+	private IORegisters ior;
 	
 	private GameBoyMMU() {
 		memory = new int[65536];
+		ior = new IORegisters(this);
+
 	}
 	
 	public void initialize(String filename) throws IOException {
-		bootrom = new File("DMG_ROM.bin");
 		file = new File(filename);
-		  
-		FileInputStream fStream = new FileInputStream(bootrom);
-		FileInputStream fStream2 = new FileInputStream(file);
+
+		FileInputStream fStream = new FileInputStream(file);
 		
 		try {
 			byte[] buff = new byte[65536];
-			int bootromLength = (new Long(bootrom.length())).intValue();
-            fStream.read(buff, 0, bootromLength);
 			int loadromLength = (new Long(file.length())).intValue();
-			fStream2.read(buff, 256, loadromLength);
+			fStream.read(buff, 0, loadromLength);
             for(int i = 0; i < buff.length; i++) {
             	memory[i] = buff[i];
 			}
@@ -55,8 +56,13 @@ public class GameBoyMMU {
 	}
 	
 	public int getMemoryAtAddress(int address) throws ArrayIndexOutOfBoundsException {
+		if (disableBootrom) {
+			return memory[address] & 0xFF;
+		}
+		else if(address < BootRom.data.length) {
+			return BootRom.data[address] & 0xFF;
+		}
 		return memory[address] & 0xFF;
-		
 	}
 	
 	public int[] getMemory() {
@@ -74,9 +80,13 @@ public class GameBoyMMU {
 			case 0x8000:
 			case 0x9000:
 				//System.out.println("$" + Util.byteToHex16(address).toUpperCase() + ": $" + Util.byteToHex(source).toUpperCase());
-				Util.getGPU().setVRAM(address & 0x1fff, source);
+				Util.getGPU().setVRAM(address, source);
 				Util.getGPU().updateTile(address);
 				memory[address] = source;
+			case 0xF000:
+				if((address == IORegisters.BOOTROM_STATUS) && source == 0x01) {
+					disableBootrom = true;
+				}
 			default:
 				memory[address] = source;
 				break;
