@@ -74,7 +74,7 @@ public class GameBoyMMU {
 			case 0x8000:
 			case 0x9000:
 				//System.out.println("$" + Util.byteToHex16(address).toUpperCase() + ": $" + Util.byteToHex(source).toUpperCase());
-				Util.getGPU().setVRAM(address, source);
+				Util.getGPU().setVRAM(address & 0x1fff, source);
 				Util.getGPU().updateTile(address);
 				memory[address] = source;
 			default:
@@ -83,6 +83,8 @@ public class GameBoyMMU {
 
 		}
 	}
+	
+	
 
 	
 

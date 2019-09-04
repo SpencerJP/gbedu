@@ -62,15 +62,25 @@ public class GameBoyCPU {
 //			if (programCounter == 0xc) {
 //				System.out.println("Zeroed VRAM");
 //			}
-			if(runOnce && programCounter == 0x53) {
-//				gpu.dumpVram();
-			    //gpu.dumpTileset();
-				gpu.dumpBackgroundTilemap(0);
-				//gpu.dumpBackgroundTilemap(1);
-				//gpu.printBackgroundTilemap(0);
-				gpu.printTile( 0x9910);
-				gpu.printTile( 0, 0x18);
+			if(runOnce && programCounter == 0x55) {
+				gpu.dumpVram();
+//			    gpu.dumpTileset();
+//				gpu.dumpBackgroundTilemap(0);
+//			gpu.dumpSetBackgroundTilemap(0);
+//				gpu.printBackgroundTilemap(0);
+//				int[] tileSpots = {0x19, 0x0d, 0x0e, 0x0f, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18};
+//				for(int i = 0; i < tileSpots.length; i++) {
+//					gpu.printTile(tileSpots[i]);
+//				}
+				//gpu.printTile( 0x9910);
+				//gpu.printTile( 0, 0x18);
 				runOnce = false;
+			}
+			if (programCounter == 0x4f) {
+				//System.out.println(Util.byteToHex16(getHL()));
+			}
+			if (programCounter == 0x51) {
+				//System.out.println(Util.byteToHex16(getHL()));
 			}
 
 			if(programCounter == 0x42) {
