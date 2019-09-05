@@ -2,7 +2,6 @@ package cpu.opcodetypes;
 
 import cpu.GameBoyCPU;
 import cpu.opcodetypes.enums.OpCodeRegister;
-import main.Util;
 import mmu.GameBoyMMU;
 
 public class OpCodeLD extends OpCode {

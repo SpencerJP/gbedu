@@ -1,12 +1,12 @@
 package mmu;
 
 
+import bootrom.BootRom;
+import main.Util;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-
-import bootrom.BootRom;
-import main.Util;
 
 
 public class GameBoyMMU {
@@ -14,7 +14,7 @@ public class GameBoyMMU {
 	private File bootrom;
 	private File file;
 	private int[] memory;
-	private boolean disableBootrom;
+	public boolean disableBootrom;
 	private static GameBoyMMU singletonInstance;
 	private IORegisters ior;
 	
@@ -79,14 +79,16 @@ public class GameBoyMMU {
 		switch(address & 0xF000) {
 			case 0x8000:
 			case 0x9000:
-				//System.out.println("$" + Util.byteToHex16(address).toUpperCase() + ": $" + Util.byteToHex(source).toUpperCase());
 				Util.getGPU().setVRAM(address, source);
 				Util.getGPU().updateTile(address);
 				memory[address] = source;
+				break;
 			case 0xF000:
 				if((address == IORegisters.BOOTROM_STATUS) && source == 0x01) {
 					disableBootrom = true;
 				}
+				memory[address] = source;
+				break;
 			default:
 				memory[address] = source;
 				break;

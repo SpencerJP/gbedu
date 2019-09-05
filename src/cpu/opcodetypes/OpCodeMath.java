@@ -1,10 +1,9 @@
 package cpu.opcodetypes;
 
+import cpu.GameBoyCPU;
 import cpu.opcodetypes.enums.OpCodeFunction;
 import cpu.opcodetypes.enums.OpCodeRegister;
-import main.Util;
 import mmu.GameBoyMMU;
-import cpu.GameBoyCPU;
 
 public class OpCodeMath extends OpCode {
 	
@@ -61,6 +60,12 @@ public class OpCodeMath extends OpCode {
 				setFlags(false, false, false, (getRegister(cpu,register) == 0));
 				break;
 			case ADD:
+				if (register == null) {
+					source = getRelativeMemory(cpu, 1);
+				}
+				else {
+					source = getRegister(cpu, register);
+				}
 				hFlag = (((getAccumulator() & 0xf) + (getRegister(cpu, register) & 0xf)) & 0x10) == 0x10;
 				result = getAccumulator() + getRegister(cpu, register);
 				cFlag = result > 255;
@@ -72,13 +77,15 @@ public class OpCodeMath extends OpCode {
 			case SUB:
 				if (register == null) {
 					source = getRelativeMemory(cpu, 1);
+				}else {
+					source = getRegister(cpu, register);
 				}
 				accum = getAccumulator();
-				setAccumulator(cpu, ((accum - source) & 0xff));
 				setFlagZ(((accum - source) & 0xff) == 0);
 				setFlagN(true);
 				setFlagH((0x0f & source) > (0x0f & accum));
 				setFlagC(source > accum);
+				setAccumulator(cpu, ((accum - source) & 0xff));
 			case PUSH:
 				cpu.pushSP(getRegister(cpu, register));
 				break;

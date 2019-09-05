@@ -19,8 +19,6 @@ public class Main {
 			e.printStackTrace();
 		}
 		//memory.dump();
-        gpu.enableLCD();
-
 		try {
 			cpu.run();
 		} catch (Exception e) {

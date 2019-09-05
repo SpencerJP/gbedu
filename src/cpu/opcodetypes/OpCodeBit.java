@@ -1,10 +1,9 @@
 package cpu.opcodetypes;
 
+import cpu.GameBoyCPU;
 import cpu.opcodetypes.enums.OpCodeFunction;
 import cpu.opcodetypes.enums.OpCodeRegister;
-import main.Util;
 import mmu.GameBoyMMU;
-import cpu.GameBoyCPU;
 
 public class OpCodeBit extends OpCode {
 	
@@ -38,9 +37,8 @@ public class OpCodeBit extends OpCode {
 			case RL:
 				result = (getRegister(cpu, register) << 1) & 0xff;
 				result |= getFlagC() ? 1 : 0;
-				setRegister(cpu, register, result);
-				System.out.println(getRegister(cpu, register));
 				setFlagC((getRegister(cpu, register) & (1<<7)) != 0);
+				setRegister(cpu, register, result & 0xff);
 				setFlagZ(result == 0);
 				setFlagN(false);
 				setFlagH(false);
@@ -54,7 +52,7 @@ public class OpCodeBit extends OpCode {
 					setFlagC(false);
 				}
 
-				setRegister(cpu, register, result);
+				setRegister(cpu, register, result & 0xff);
 				setFlagZ(result == 0);
 				setFlagN(false);
 				setFlagH(false);
@@ -67,7 +65,7 @@ public class OpCodeBit extends OpCode {
 				} else {
 					setFlagC(false);
 				}
-				setRegister(cpu, register, result);
+				setRegister(cpu, register, result & 0xff);
 				setFlagZ(result == 0);
 				setFlagN(false);
 				setFlagH(false);
@@ -76,8 +74,8 @@ public class OpCodeBit extends OpCode {
 				result = getRegister(cpu, register) >> 1;
 				result |= getFlagC() ? (1 << 7) : 0;
 
-				setRegister(cpu, register, result);
 				setFlagC((getRegister(cpu, register) & 1) != 0);
+				setRegister(cpu, register, result & 0xff);
 				setFlagZ(result == 0);
 				setFlagN(false);
 				setFlagH(false);

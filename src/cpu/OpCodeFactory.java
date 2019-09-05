@@ -1,14 +1,14 @@
 package cpu;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import cpu.opcodetypes.*;
 import cpu.opcodetypes.enums.JumpType;
 import cpu.opcodetypes.enums.OpCodeCondition;
 import cpu.opcodetypes.enums.OpCodeFunction;
 import cpu.opcodetypes.enums.OpCodeRegister;
 import main.Util;
+
+import java.util.HashMap;
+import java.util.Map;
 
 
 public class OpCodeFactory {
@@ -38,6 +38,7 @@ public class OpCodeFactory {
 		primaryOpCodeMap.put("23", new OpCodeMath("INC HL", 4, 1, OpCodeFunction.INC_16, OpCodeRegister.REGISTERS_HL));
 		primaryOpCodeMap.put("24", new OpCodeMath("INC H", 4, 1, OpCodeFunction.INC, OpCodeRegister.REGISTER_H));
 		primaryOpCodeMap.put("0c", new OpCodeMath("INC C", 4, 1, OpCodeFunction.INC, OpCodeRegister.REGISTER_C));
+		primaryOpCodeMap.put("04", new OpCodeMath("INC B", 4, 1, OpCodeFunction.INC, OpCodeRegister.REGISTER_B));
 
 		//DEC
 		primaryOpCodeMap.put("05", new OpCodeMath("DEC B", 4, 1, OpCodeFunction.DEC, OpCodeRegister.REGISTER_B));
@@ -56,7 +57,6 @@ public class OpCodeFactory {
 		//RLA
 		primaryOpCodeMap.put("17", new OpCodeBit("RLA",4, 1, OpCodeFunction.RL, OpCodeRegister.REGISTER_A));
 		//RLCA
-		primaryOpCodeMap.put("04", new OpCodeBit("RLCA",4, 1, OpCodeFunction.RLC, OpCodeRegister.REGISTER_A));
 
 		//C1-F1 pops, C5-F5 pushes to/from register to/from SP
 		primaryOpCodeMap.put("c5", new OpCodeMath("PUSH BC", 16, 1, OpCodeFunction.PUSH, OpCodeRegister.REGISTERS_BC));

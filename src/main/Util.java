@@ -1,8 +1,8 @@
 package main;
 
+import cpu.GameBoyCPU;
 import gpu.GameBoyGPU;
 import mmu.GameBoyMMU;
-import cpu.GameBoyCPU;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;

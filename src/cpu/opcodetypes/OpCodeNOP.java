@@ -1,7 +1,7 @@
 package cpu.opcodetypes;
 
-import mmu.GameBoyMMU;
 import cpu.GameBoyCPU;
+import mmu.GameBoyMMU;
 
 public class OpCodeNOP extends OpCode {
 

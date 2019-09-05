@@ -1,14 +1,11 @@
 package gpu;
 
 import main.Util;
-import mmu.GameBoyMMU;
 
 import javax.swing.*;
-
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.util.Arrays;
 
 public class GameBoyGPU implements Runnable {
 
@@ -139,19 +136,10 @@ public class GameBoyGPU implements Runnable {
         int bgTileset = GpuRegisters.getBackgroundTileset();
         int line = GpuRegisters.getCurrentScanline();
         int scrollX = GpuRegisters.getScrollX();
-//        int scrollY = GpuRegisters.getScrollY();
         int scrollY = 0;
-        //GpuRegisters.setScrollY((scrollY == 255) ? 0 : scrollY + 1);
         int mapOffset = bgTilemap == 1 ? 0x9C00 : 0x9800;
-        //System.out.println((line + scrollY));
 
         mapOffset = mapOffset + (((line + scrollY & 0xFF) >> 3) * 32);
-        //System.out.println((((line + scrollY & 0xFF) >> 3) * 32));
-        //System.out.println(Util.byteToHex16(Util.getMemory().getMemoryAtAddress(0x9904)));
-        //System.out.println(Util.byteToHex16(((scrollY & 0xFF) >> 3) * 31) + " wanted value: ~0x" + Util.byteToHex16(0x0104)); // wanted value
-       // System.out.println(mapOffset);
-        //mapOffset += 0x12f;
-
         int lineOffset = (scrollX >> 3);
 
         int y = (line + scrollY) & 7;
@@ -161,14 +149,12 @@ public class GameBoyGPU implements Runnable {
         int canvasOffSet = (line * WIDTH_PIXELS);
 
         Color color;
-        //System.out.println(Util.byteToHex16(mapOffset + lineOffset));
         int tile = vram[mapOffset + lineOffset];
         if(bgTileset == 1 && tile < 128) {
             tile += 256;
         }
         for(int i = 0; i < WIDTH_PIXELS; i++)
         {
-            //System.out.println(Util.byteToHex16(tile));
             color = baseColoursGB[tileset[tile][y][x]];
             pixels[canvasOffSet] = color;
 
@@ -338,7 +324,6 @@ public class GameBoyGPU implements Runnable {
             }
 
             for(int j = 0; j <8;j++ ){
-                //System.out.println("mOffset="+Util.byteToHex16(mapOffset)+", address=" + Util.byteToHex16(i) +", addedTogether=" + (mapOffset + Util.getMemory().getMemoryAtAddress(i)));
                 s = s + tileset[Util.getMemory().getMemoryAtAddress(i)][k][j];
                 z++;
             }

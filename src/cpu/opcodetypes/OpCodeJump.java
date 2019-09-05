@@ -1,10 +1,10 @@
 package cpu.opcodetypes;
 
+import cpu.GameBoyCPU;
 import cpu.opcodetypes.enums.JumpType;
 import cpu.opcodetypes.enums.OpCodeCondition;
 import main.Util;
 import mmu.GameBoyMMU;
-import cpu.GameBoyCPU;
 
 public class OpCodeJump extends OpCode {
 	

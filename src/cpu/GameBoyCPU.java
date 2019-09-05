@@ -1,17 +1,13 @@
 package cpu;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import cpu.opcodetypes.MissingOpCodeException;
 import cpu.opcodetypes.OpCode;
-import cpu.opcodetypes.OpCodeJump;
 import gpu.GameBoyGPU;
 import gpu.GpuRegisters;
 import main.Util;
 import mmu.GameBoyMMU;
 
-import javax.swing.*;
+import java.util.logging.Level;
 
 public class GameBoyCPU {
 
@@ -31,6 +27,7 @@ public class GameBoyCPU {
 	private int s = 0x00;
 	private int p = 0x00;
 
+	private int lastOperation;
 
 
 	private int programCounter = 0;
@@ -54,52 +51,13 @@ public class GameBoyCPU {
 	
 	public void run() throws Exception {
 		int cycles = 0;
-		int prevScrollY = 0;
+		int prevFF40 = 0;
 		GameBoyGPU gpu = GameBoyGPU.getInstance();
 		boolean runOnce = true;
 		while(true) {
 			cycles = runOperation();
 			gpu.addClockTime(cycles);
 			gpu.run();
-//			if (programCounter == 0xc) {
-//				System.out.println("Zeroed VRAM");
-//			}
-
-//			if (GpuRegisters.getScrollY() != prevScrollY) {
-//				prevScrollY = GpuRegisters.getScrollY();
-//				System.out.println(prevScrollY);
-//			}
-
-			if(runOnce && programCounter == 0x55) {
-				//gpu.dumpVram();
-//			    gpu.dumpTileset();
-//				gpu.dumpBackgroundTilemap(0);
-//				gpu.printBackgroundTilemap(0);
-//				int[] tileSpots = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x19, 0x0d, 0x0e, 0x0f, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18};
-//				for(int i = 0; i < tileSpots.length; i++) {
-//					gpu.printTile(tileSpots[i]);
-//				}
-
-				//gpu.printTile( 0x9910);
-				//gpu.printTile( 0, 0x18);
-				runOnce = false;
-			}
-			if (programCounter == 0x4f) {
-				//System.out.println(Util.byteToHex16(getHL()));
-			}
-			if (programCounter == 0x51) {
-				//System.out.println(Util.byteToHex16(getHL()));
-			}
-
-			if(programCounter == 0x42) {
-				//System.out.println(Util.byteToHex(a));
-			}
-            //Util.log(gpu.mode.name());
-			//Util.log("GPU Clock=" + gpu.clock);
-
-			//Thread.sleep(0300);
-			//Util.log("HL: " + Util.byteToHex(h) + " " + Util.byteToHex(l) );
-			//Util.log(Util.flagsToString());
 		}
 	}
 	
@@ -107,16 +65,15 @@ public class GameBoyCPU {
 	private int runOperation() throws Exception {
 		int cycles = 0;
 		try {
-
-			OpCode op = opFact.constructOpCode(getProgramCounter(), mmu.getMemoryAtAddress(getProgramCounter()));
+			int opCodeNum = mmu.getMemoryAtAddress(getProgramCounter());
+			lastOperation = opCodeNum;
+			OpCode op = opFact.constructOpCode(getProgramCounter(), opCodeNum);
 
 			if (op == null) {
 				throw new MissingOpCodeException(mmu, getProgramCounter());
 			}
 			Util.log("next opCode: " + Util.byteToHex16(mmu.getMemoryAtAddress(getProgramCounter())) + "["+op.toString()+"] at position " + getProgramCounter() + " (0x" + Util.byteToHex(getProgramCounter()) + ")");
-			if (programCounter == 0x28 || programCounter == 0x2b) {
-				System.out.println("TEST -> " + Util.byteToHex(programCounter));
-			}
+
 			cycles = op.runCode(this, mmu);
 			if(!isJumping) {
 				setProgramCounter(getProgramCounter() + op.getInstructionSize());
@@ -199,7 +156,6 @@ public class GameBoyCPU {
 	}
 
 	public void setProgramCounter(int newAddress) {
-		//System.out.println("moving from " + Util.byteToHex(programCounter) + " to " + Util.byteToHex(newAddress));
 		this.programCounter = newAddress;
 	}
 
@@ -290,6 +246,70 @@ public class GameBoyCPU {
 		int rightByte = Util.getMemory().getMemoryAtAddress(getSP());
 		setSP(getSP() + 1);
 		return (leftByte << 8 | rightByte);
+	}
+
+	public void setFlagC(boolean set) {
+		GameBoyCPU cpu = Util.getCPU();
+		int f = cpu.getF();
+		if(set) {
+			cpu.setF(Util.setBit(f, 4));
+		}
+		else {
+			cpu.setF(Util.resetBit(f, 4));
+		}
+	}
+	public void setFlagH(boolean set) {
+		GameBoyCPU cpu = Util.getCPU();
+		int f = cpu.getF();
+		if(set) {
+			cpu.setF(Util.setBit(f, 5));
+		}
+		else {
+			cpu.setF(Util.resetBit(f, 5));
+		}
+	}
+	public void setFlagN(boolean set) {
+		GameBoyCPU cpu = Util.getCPU();
+		int f = cpu.getF();
+		if(set) {
+			cpu.setF(Util.setBit(f, 6));
+		}
+		else {
+			cpu.setF(Util.resetBit(f, 6));
+		}
+	}
+	public void setFlagZ(boolean set) {
+		GameBoyCPU cpu = Util.getCPU();
+		int f = cpu.getF();
+		if(set) {
+			cpu.setF(Util.setBit(f, 7));
+		}
+		else {
+			cpu.setF(Util.resetBit(f, 7));
+		}
+	}
+
+	public boolean getFlagC() {
+		GameBoyCPU cpu = Util.getCPU();
+		int f = cpu.getF();
+		return Util.getBit(f, 4);
+	}
+	public boolean getFlagH() {
+		GameBoyCPU cpu = Util.getCPU();
+		int f = cpu.getF();
+		return Util.getBit(f, 5);
+	}
+
+	public boolean getFlagN() {
+		GameBoyCPU cpu = Util.getCPU();
+		int f = cpu.getF();
+		return Util.getBit(f, 6);
+	}
+
+	public boolean getFlagZ() {
+		GameBoyCPU cpu = Util.getCPU();
+		int f = cpu.getF();
+		return Util.getBit(f, 7);
 	}
 
 
