@@ -73,13 +73,12 @@ public class GameBoyCPU {
 			if(runOnce && programCounter == 0x55) {
 				//gpu.dumpVram();
 //			    gpu.dumpTileset();
-				gpu.dumpBackgroundTilemap(0);
-//				gpu.dumpSetBackgroundTilemap(0);
+//				gpu.dumpBackgroundTilemap(0);
 //				gpu.printBackgroundTilemap(0);
-				int[] tileSpots = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x19, 0x0d, 0x0e, 0x0f, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18};
-				for(int i = 0; i < tileSpots.length; i++) {
-					gpu.printTile(tileSpots[i]);
-				}
+//				int[] tileSpots = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x19, 0x0d, 0x0e, 0x0f, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18};
+//				for(int i = 0; i < tileSpots.length; i++) {
+//					gpu.printTile(tileSpots[i]);
+//				}
 
 				//gpu.printTile( 0x9910);
 				//gpu.printTile( 0, 0x18);
@@ -114,7 +113,10 @@ public class GameBoyCPU {
 			if (op == null) {
 				throw new MissingOpCodeException(mmu, getProgramCounter());
 			}
-			Util.log("next opCode: " + Util.byteToHex(mmu.getMemoryAtAddress(getProgramCounter())) + "["+op.toString()+"] at position " + getProgramCounter() + " (0x" + Util.byteToHex(getProgramCounter()) + ")");
+			Util.log("next opCode: " + Util.byteToHex16(mmu.getMemoryAtAddress(getProgramCounter())) + "["+op.toString()+"] at position " + getProgramCounter() + " (0x" + Util.byteToHex(getProgramCounter()) + ")");
+			if (programCounter == 0x28 || programCounter == 0x2b) {
+				System.out.println("TEST -> " + Util.byteToHex(programCounter));
+			}
 			cycles = op.runCode(this, mmu);
 			if(!isJumping) {
 				setProgramCounter(getProgramCounter() + op.getInstructionSize());

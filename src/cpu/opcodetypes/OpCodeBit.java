@@ -38,6 +38,8 @@ public class OpCodeBit extends OpCode {
 			case RL:
 				result = (getRegister(cpu, register) << 1) & 0xff;
 				result |= getFlagC() ? 1 : 0;
+				setRegister(cpu, register, result);
+				System.out.println(getRegister(cpu, register));
 				setFlagC((getRegister(cpu, register) & (1<<7)) != 0);
 				setFlagZ(result == 0);
 				setFlagN(false);
@@ -51,6 +53,8 @@ public class OpCodeBit extends OpCode {
 				} else {
 					setFlagC(false);
 				}
+
+				setRegister(cpu, register, result);
 				setFlagZ(result == 0);
 				setFlagN(false);
 				setFlagH(false);
@@ -63,6 +67,7 @@ public class OpCodeBit extends OpCode {
 				} else {
 					setFlagC(false);
 				}
+				setRegister(cpu, register, result);
 				setFlagZ(result == 0);
 				setFlagN(false);
 				setFlagH(false);
@@ -70,6 +75,8 @@ public class OpCodeBit extends OpCode {
 			case RR:
 				result = getRegister(cpu, register) >> 1;
 				result |= getFlagC() ? (1 << 7) : 0;
+
+				setRegister(cpu, register, result);
 				setFlagC((getRegister(cpu, register) & 1) != 0);
 				setFlagZ(result == 0);
 				setFlagN(false);
