@@ -8,9 +8,12 @@ import main.Util;
 import mmu.GameBoyMMU;
 
 import java.util.logging.Level;
+import java.time.Duration;
+import java.time.Instant;
 
 public class GameBoyCPU {
 
+	private static final double CPU_CLOCK_RATE = 4.1934;
 	public boolean isJumping = false;
 	GameBoyMMU mmu;
 	OpCodeFactory opFact;
@@ -27,7 +30,9 @@ public class GameBoyCPU {
 	private int s = 0x00;
 	private int p = 0x00;
 
+
 	private int lastOperation;
+	public boolean setOnce = false; // todo delete
 
 
 	private int programCounter = 0;
@@ -53,11 +58,27 @@ public class GameBoyCPU {
 		int cycles = 0;
 		int prevFF40 = 0;
 		GameBoyGPU gpu = GameBoyGPU.getInstance();
+		long timeCarry = 0;
 		boolean runOnce = true;
 		while(true) {
+			Instant start = Instant.now();
 			cycles = runOperation();
 			gpu.addClockTime(cycles);
+			Instant end = Instant.now();
+			Duration timeElapsed = Duration.between(start, end);
+//			long sleepTime = (long) ((cycles * CPU_CLOCK_RATE / 4) - timeElapsed.toMillis() - timeCarry);
+//			//System.out.println(sleepTime);
+//			if(sleepTime > 0) {
+//				Thread.sleep(sleepTime);
+//			}
+//			else {
+//				timeCarry = Math.abs(sleepTime);
+//			}
 			gpu.run();
+			if (setOnce && runOnce) {
+				System.out.println(Util.byteToHex16(programCounter) + " graphics output here for some reason??!?!");
+				runOnce = false;
+			}
 		}
 	}
 	

@@ -31,6 +31,7 @@ public class GameBoyLCD extends JPanel {
         if (pixels[0] == null) {
             return;
         }
+        int i = 0;
         for(Color c : pixels) {
             if(x == GameBoyGPU.WIDTH_PIXELS) {
                 x = 0;
@@ -40,10 +41,16 @@ public class GameBoyLCD extends JPanel {
                 canvas.setRGB(x, y, c.getRGB());
             }
             catch(Exception e) {
-                Arrays.toString(pixels);
+                System.out.println("pixel " + i);
             }
             x++;
+            i++;
         }
-        repaint();
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                repaint();
+            }
+        });
     }
 }

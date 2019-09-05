@@ -20,7 +20,6 @@ public class GameBoyGPU implements Runnable {
     private static final int TILE_PIXEL_SIZE = 8;
 
 
-
     private static final Color DARKEST_GREEN = new Color(15, 56, 15);
     private static final Color DARK_GREEN = new Color(48, 98, 48);
     private static final Color LIGHT_GREEN = new Color(139, 172, 15);
@@ -42,9 +41,7 @@ public class GameBoyGPU implements Runnable {
     private Color[] pixels = new Color[WIDTH_PIXELS*HEIGHT_PIXELS]; // long array of pixels. Wrapping is handled in code
     private int[] vram = new int[65536];
     private boolean LCDEnabled;
-//    private int bgTileBase = 0x0000;
-//    private int bgMapBase = 0x1800;
-//    private int winTileBase = 0x1800;
+
 
     private GameBoyGPU() {
         frame= new JFrame("Gameboy");
@@ -136,7 +133,7 @@ public class GameBoyGPU implements Runnable {
         int bgTileset = GpuRegisters.getBackgroundTileset();
         int line = GpuRegisters.getCurrentScanline();
         int scrollX = GpuRegisters.getScrollX();
-        int scrollY = 0;
+        int scrollY = GpuRegisters.getScrollY();
         int mapOffset = bgTilemap == 1 ? 0x9C00 : 0x9800;
 
         mapOffset = mapOffset + (((line + scrollY & 0xFF) >> 3) * 32);
@@ -156,6 +153,9 @@ public class GameBoyGPU implements Runnable {
         for(int i = 0; i < WIDTH_PIXELS; i++)
         {
             color = baseColoursGB[tileset[tile][y][x]];
+            if(!Util.getCPU().setOnce && tileset[tile][y][x] != 0) {
+                Util.getCPU().setOnce = true;
+            }
             pixels[canvasOffSet] = color;
 
             canvasOffSet++;
