@@ -3,15 +3,11 @@ package cpu;
 import cpu.opcodetypes.MissingOpCodeException;
 import cpu.opcodetypes.OpCode;
 import gpu.GameBoyGPU;
-import gpu.GameBoyLCD;
-import gpu.GpuRegisters;
 import main.Util;
 import mmu.GameBoyMMU;
 
 import java.util.ArrayList;
 import java.util.logging.Level;
-import java.time.Duration;
-import java.time.Instant;
 
 public class GameBoyCPU {
 
@@ -38,6 +34,7 @@ public class GameBoyCPU {
 	private int bit8Operand = 0;
 	private int bit16Operand = 0;
 
+	private boolean interruptsEnabled = false;
 
 	private int programCounter = 0;
 	
@@ -350,5 +347,13 @@ public class GameBoyCPU {
 		int leftHalf = Util.getMemory().getMemoryAtAddress(programCounter + 2);
 		int rightHalf = Util.getMemory().getMemoryAtAddress(programCounter + 1);
 		bit16Operand = ((leftHalf << 8) | rightHalf);
+	}
+
+	public boolean isInterruptsEnabled() {
+		return interruptsEnabled;
+	}
+
+	public void setInterruptsEnabled(boolean interruptsEnabled) {
+		this.interruptsEnabled = interruptsEnabled;
 	}
 }

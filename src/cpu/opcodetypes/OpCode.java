@@ -10,7 +10,6 @@ import static cpu.opcodetypes.enums.OpCodeRegister.REGISTER_C;
 
 public abstract class OpCode {
 
-
 	protected int cycles;
 	protected int instructionSize;
 	protected int programAddress;

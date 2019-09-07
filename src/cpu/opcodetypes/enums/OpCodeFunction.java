@@ -24,5 +24,7 @@ public enum OpCodeFunction {
 	PUSH,
 	POP,
     SRA,
+    CPL,
+	CCF
 
 }

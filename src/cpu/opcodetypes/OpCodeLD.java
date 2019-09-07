@@ -18,12 +18,6 @@ public class OpCodeLD extends OpCode {
 		this.register = register;
 	}
 
-	public OpCodeLD(String doc, int cycles, int instructionSize, OpCodeRegister register, int destAddress) {
-		super(doc, cycles, instructionSize);
-		this.register = register;
-		this.destAddress = destAddress;
-	}
-
 	public OpCodeLD(String doc, int cycles, int instructionSize,
 			OpCodeRegister register, OpCodeRegister sourceRegister) {
 		super(doc, cycles, instructionSize);

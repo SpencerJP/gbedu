@@ -121,6 +121,16 @@ public class OpCodeBit extends OpCode {
 			case SET:
 				setRegister(cpu, register, Util.setBit(getRegister(cpu, register), bitPosition));
 				break;
+			case CPL:
+				setAccumulator(cpu, ~getAccumulator());
+				setFlagN(true);
+				setFlagH(true);
+				break;
+			case CCF:
+				setFlagC(!getFlagC());
+				setFlagN(false);
+				setFlagH(false);
+				break;
 			default:
 				throw new UnsupportedOperationException("Not implemented");
 		}

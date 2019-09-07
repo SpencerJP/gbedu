@@ -159,4 +159,8 @@ public class GpuRegisters {
     public static void incrementScanLine() {
         Util.getMemory().setMemoryAtAddress(CURRENT_SCAN_LINE, Util.getMemory().getMemoryAtAddress(CURRENT_SCAN_LINE) + 1);
     }
+
+    public static int getBGPalette() {
+        return Util.getMemory().getMemoryAtAddress(BACKGROUND_PALETTE);
+    }
 }

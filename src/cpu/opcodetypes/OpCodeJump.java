@@ -3,14 +3,17 @@ package cpu.opcodetypes;
 import cpu.GameBoyCPU;
 import cpu.opcodetypes.enums.JumpType;
 import cpu.opcodetypes.enums.OpCodeCondition;
+import cpu.opcodetypes.enums.OpCodeRegister;
 import main.Util;
 import mmu.GameBoyMMU;
 
 public class OpCodeJump extends OpCode {
-	
+
+	private OpCodeRegister register;
 	private OpCodeCondition condition;
 	private int destAddress;
 	private JumpType jumpType;
+	private int source;
 
 	public OpCodeJump(String doc, int instructionSize, JumpType type, OpCodeCondition condition) {
 		super(doc, -1, instructionSize);
@@ -21,21 +24,48 @@ public class OpCodeJump extends OpCode {
 		super(doc, -1, instructionSize);
 		jumpType = type;
 	}
+	// for restarts
+	public OpCodeJump(String doc, int instructionSize, JumpType type, int source) {
+		super(doc, -1, instructionSize);
+		jumpType = type;
+		this.source = source;
+	}
+
+	public OpCodeJump(String doc, int instructionSize, JumpType type, OpCodeRegister register) {
+		super(doc, -1, instructionSize);
+		jumpType = type;
+		this.register = register;
+
+
+
+	}
 
 
 	@Override
 	public int runCode(GameBoyCPU cpu, GameBoyMMU mmu) throws Exception {
 
-		if (jumpType == JumpType.JUMP_TO_ADDRESS) {
-			destAddress = getOperand16bit(cpu);
-		} else if(jumpType == JumpType.ADD_TO_ADDRESS) {
-			byte jumpLength = (byte) getOperand8bit(cpu);
-			destAddress = Util.getCPU().getProgramCounter() + jumpLength; // this value is a signed byte
-		} else if(jumpType == JumpType.CALL) {
-			destAddress = getOperand16bit(cpu);
-
-		} else if(jumpType == JumpType.RETURN) {
-			destAddress = cpu.popSP();
+		switch(jumpType) {
+			case CALL:
+			case JUMP_TO_ADDRESS:
+				if(register != null) {
+					destAddress = getRegister(cpu, register);
+				}
+				else {
+					destAddress = getOperand16bit(cpu);
+				}
+				break;
+			case ADD_TO_ADDRESS:
+				byte jumpLength = (byte) getOperand8bit(cpu);
+				destAddress = Util.getCPU().getProgramCounter() + jumpLength; // this value is a signed byte
+				break;
+			case RETURN:
+				destAddress = cpu.popSP();
+				break;
+			case RESTART:
+				destAddress = source;
+				break;
+			default:
+				throw new Exception("OpCodeJump mistake");
 		}
 		if(condition != null) {
 			switch(condition) {
@@ -81,6 +111,11 @@ public class OpCodeJump extends OpCode {
 		if (jumpType == JumpType.RETURN) {
 			cpu.setProgramCounter(destAddress);
 			return 16;
+		}
+		if (jumpType == JumpType.RESTART) {
+			Util.getCPU().pushSP(Util.getCPU().getProgramCounter());
+			cpu.setProgramCounter(destAddress);
+			return 32;
 		}
 		cpu.setProgramCounter(destAddress);
 		return 12;

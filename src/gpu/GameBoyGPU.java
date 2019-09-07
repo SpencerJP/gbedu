@@ -23,7 +23,7 @@ public class GameBoyGPU implements Runnable {
     private static final Color DARKEST_GREEN = new Color(15, 56, 15);
     private static final Color DARK_GREEN = new Color(48, 98, 48);
     private static final Color LIGHT_GREEN = new Color(139, 172, 15);
-    private static final Color LIGHTEST_GREEN = new Color(255,255,255);
+    private static final Color LIGHTEST_GREEN = new Color(155, 188, 15);
     private static final Color[] baseColoursGB = new Color[4];
     static {
         baseColoursGB[0] = LIGHTEST_GREEN;
@@ -140,6 +140,7 @@ public class GameBoyGPU implements Runnable {
         int line = GpuRegisters.getCurrentScanline();
         int scrollX = GpuRegisters.getScrollX();
         int scrollY = GpuRegisters.getScrollY();
+        Color[] palette = createPalette();
         int mapOffset = bgTilemap == 1 ? 0x9C00 : 0x9800;
 
         mapOffset = mapOffset + (((line + scrollY & 0xFF) >> 3) * 32);
@@ -164,7 +165,7 @@ public class GameBoyGPU implements Runnable {
         }
         for(int i = 0; i < WIDTH_PIXELS; i++)
         {
-            color = baseColoursGB[tileset[tile][y][x]];
+            color = palette[tileset[tile][y][x]];
             pixels[canvasOffSet] = color;
             canvasOffSet++;
 
@@ -179,6 +180,20 @@ public class GameBoyGPU implements Runnable {
                 }
             }
         }
+    }
+
+    private Color[] createPalette() {
+        Color[] palette = new Color[4];
+        int paletteRegister = GpuRegisters.getBGPalette();
+        int color0 = paletteRegister & 0b00000011;
+        int color1 = (paletteRegister >> 2) & 0b00000011;
+        int color2 = (paletteRegister >> 4)  & 0b00000011;
+        int color3 = (paletteRegister >> 6)  & 0b00000011;
+        palette[0] = baseColoursGB[color0];
+        palette[1] = baseColoursGB[color1];
+        palette[2] = baseColoursGB[color2];
+        palette[3] = baseColoursGB[color3];
+        return palette;
     }
 
     public void drawData() {
