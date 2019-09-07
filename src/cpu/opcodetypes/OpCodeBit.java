@@ -1,5 +1,6 @@
 package cpu.opcodetypes;
 
+
 import cpu.GameBoyCPU;
 import cpu.opcodetypes.enums.OpCodeFunction;
 import cpu.opcodetypes.enums.OpCodeRegister;

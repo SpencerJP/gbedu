@@ -14,7 +14,10 @@ public class GpuRegisters {
     }
 
     public static void setLCDC(int val) {
-        Util.getMemory().setMemoryAtAddress(LCDC, val);
+    	if (val == 0x91) {
+    		GameBoyGPU.getInstance().enableLCD();
+    	}
+        
     }
 
     public static int getScrollX() {

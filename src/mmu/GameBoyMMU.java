@@ -3,6 +3,7 @@ package mmu;
 
 import bootrom.BootRom;
 import main.Util;
+import gpu.GpuRegisters;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -86,6 +87,9 @@ public class GameBoyMMU {
 			case 0xF000:
 				if((address == IORegisters.BOOTROM_STATUS) && source == 0x01) {
 					disableBootrom = true;
+				}
+				if(address == 0xff40) {
+					GpuRegisters.setLCDC(source);
 				}
 				memory[address] = source;
 				break;

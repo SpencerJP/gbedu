@@ -3,10 +3,12 @@ package cpu;
 import cpu.opcodetypes.MissingOpCodeException;
 import cpu.opcodetypes.OpCode;
 import gpu.GameBoyGPU;
+import gpu.GameBoyLCD;
 import gpu.GpuRegisters;
 import main.Util;
 import mmu.GameBoyMMU;
 
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.time.Duration;
 import java.time.Instant;
@@ -32,6 +34,7 @@ public class GameBoyCPU {
 
 
 	private int lastOperation;
+	ArrayList<Integer> opCodesOnce = new ArrayList<Integer>();
 	public boolean setOnce = false; // todo delete
 
 
@@ -59,6 +62,7 @@ public class GameBoyCPU {
 		int prevFF40 = 0;
 		GameBoyGPU gpu = GameBoyGPU.getInstance();
 		long timeCarry = 0;
+		
 		boolean runOnce = true;
 		while(true) {
 			Instant start = Instant.now();
@@ -66,14 +70,7 @@ public class GameBoyCPU {
 			gpu.addClockTime(cycles);
 			Instant end = Instant.now();
 			Duration timeElapsed = Duration.between(start, end);
-//			long sleepTime = (long) ((cycles * CPU_CLOCK_RATE / 4) - timeElapsed.toMillis() - timeCarry);
-//			//System.out.println(sleepTime);
-//			if(sleepTime > 0) {
-//				Thread.sleep(sleepTime);
-//			}
-//			else {
-//				timeCarry = Math.abs(sleepTime);
-//			}
+			Thread.sleep(1);
 			gpu.run();
 			if (setOnce && runOnce) {
 				System.out.println(Util.byteToHex16(programCounter) + " graphics output here for some reason??!?!");
@@ -88,6 +85,10 @@ public class GameBoyCPU {
 		try {
 			int opCodeNum = mmu.getMemoryAtAddress(getProgramCounter());
 			lastOperation = opCodeNum;
+			if (!opCodesOnce.contains(programCounter)) {
+				opCodesOnce.add(programCounter);
+				//System.out.println(Util.byteToHex16(Util.getMemory().getMemoryAtAddress(0x9904)) + " at " + Util.byteToHex16(programCounter));
+			}
 			OpCode op = opFact.constructOpCode(getProgramCounter(), opCodeNum);
 
 			if (op == null) {

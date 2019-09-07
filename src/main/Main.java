@@ -1,6 +1,7 @@
 package main;
 
 import cpu.GameBoyCPU;
+
 import gpu.GameBoyGPU;
 import mmu.GameBoyMMU;
 
