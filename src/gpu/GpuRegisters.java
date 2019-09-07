@@ -4,10 +4,20 @@ import main.Util;
 
 public class GpuRegisters {
     public static final int LCDC = 0xff40;
-    public static final int scrollY = 0xFF42;
-    public static final int scrollX = 0xFF43;
-    public static final int currentScanLine = 0xFF44;
-    public static final int backgroundPalette = 0xFF47;
+    public static final int SCROLL_Y = 0xFF42;
+    public static final int SCROLL_X = 0xFF43;
+    public static final int CURRENT_SCAN_LINE = 0xFF44;
+    public static final int BACKGROUND_PALETTE = 0xFF47;
+
+    // bit positions in LCDC
+    public static final int LCD_DISPLAY_ENABLED = 7;
+    public static final int WINDOW_TILEMAP_SELECT = 6;
+    public static final int WINDOW_DISPLAY_ENABLED = 5;
+    public static final int TILE_DATA_SELECT = 4;
+    public static final int BG_TILEMAP_SELECT = 3;
+    public static final int SPRITE_SIZE = 2;
+    public static final int SPRITES_ENABLED = 1;
+    public static final int BG_WINDOW_PRIORITY = 0;
 
     public static int getLCDC() {
         return Util.getMemory().getMemoryAtAddress(LCDC);
@@ -21,44 +31,31 @@ public class GpuRegisters {
     }
 
     public static int getScrollX() {
-        return Util.getMemory().getMemoryAtAddress(scrollX);
+        return Util.getMemory().getMemoryAtAddress(SCROLL_X);
     }
 
     public static int getScrollY() {
-        return Util.getMemory().getMemoryAtAddress(scrollY);
-    }
-
-    public static void setScrollX(int x) {
-        Util.getMemory().setMemoryAtAddress(scrollX, x);
-    }
-
-    public static void setScrollY(int y) {
-        Util.getMemory().setMemoryAtAddress(scrollY, y);
+        return Util.getMemory().getMemoryAtAddress(SCROLL_Y);
     }
 
     public static int getCurrentScanline() {
-        return Util.getMemory().getMemoryAtAddress(currentScanLine);
+        return Util.getMemory().getMemoryAtAddress(CURRENT_SCAN_LINE);
     }
 
     public static void setCurrentScanline(int line) {
-        Util.getMemory().setMemoryAtAddress(currentScanLine, line);
+        Util.getMemory().setMemoryAtAddress(CURRENT_SCAN_LINE, line);
     }
-
-    public static void setBackgroundPalette(int val) {
-        Util.getMemory().setMemoryAtAddress(backgroundPalette, val);
-    }
-
 
     public static boolean getLCDCBackground() {
-        return Util.getBit(getLCDC(), 0);
+        return Util.getBit(getLCDC(), BG_WINDOW_PRIORITY);
     }
 
     public static boolean getLCDCSprites() {
-        return Util.getBit(getLCDC(), 1);
+        return Util.getBit(getLCDC(), SPRITES_ENABLED);
     }
 
     public static int getLCDCSpriteSize() {
-        if (Util.getBit(getLCDC(), 2)) {
+        if (Util.getBit(getLCDC(), SPRITE_SIZE)) {
             return 8*16;
         }
         else {
@@ -67,23 +64,24 @@ public class GpuRegisters {
     }
 
     public static int getBackgroundTilemap() {
-        return Util.getBit(getLCDC(), 3) ? 1 : 0;
+        return Util.getBit(getLCDC(), BG_TILEMAP_SELECT) ? 1 : 0;
     }
 
     public static int getBackgroundTileset() {
-        return Util.getBit(getLCDC(), 4) ? 1 : 0;
+        // this one is backwards for some reason
+        return Util.getBit(getLCDC(), TILE_DATA_SELECT) ? 0 : 1;
     }
 
     public static boolean getWindowOn() {
-        return Util.getBit(getLCDC(), 5);
+        return Util.getBit(getLCDC(), WINDOW_DISPLAY_ENABLED);
     }
 
     public static int getWindowTilemap() {
-        return Util.getBit(getLCDC(), 6) ? 1 : 0;
+        return Util.getBit(getLCDC(), WINDOW_TILEMAP_SELECT) ? 1 : 0;
     }
 
     public static boolean getDisplayOn() {
-        return Util.getBit(getLCDC(), 7);
+        return Util.getBit(getLCDC(), LCD_DISPLAY_ENABLED);
     }
 
 
@@ -159,6 +157,6 @@ public class GpuRegisters {
     }
 
     public static void incrementScanLine() {
-        Util.getMemory().setMemoryAtAddress(currentScanLine, Util.getMemory().getMemoryAtAddress(currentScanLine) + 1);
+        Util.getMemory().setMemoryAtAddress(CURRENT_SCAN_LINE, Util.getMemory().getMemoryAtAddress(CURRENT_SCAN_LINE) + 1);
     }
 }

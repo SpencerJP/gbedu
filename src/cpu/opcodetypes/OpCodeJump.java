@@ -10,7 +10,6 @@ public class OpCodeJump extends OpCode {
 	
 	private OpCodeCondition condition;
 	private int destAddress;
-	private int destAddress2;
 	private JumpType jumpType;
 
 	public OpCodeJump(String doc, int instructionSize, JumpType type, OpCodeCondition condition) {
@@ -28,16 +27,13 @@ public class OpCodeJump extends OpCode {
 	public int runCode(GameBoyCPU cpu, GameBoyMMU mmu) throws Exception {
 
 		if (jumpType == JumpType.JUMP_TO_ADDRESS) {
-			destAddress = getRelativeMemory(cpu, 2);
-			destAddress2 = getRelativeMemory(cpu, 1);
-			destAddress = (destAddress << 8) | destAddress2;
+			destAddress = getOperand16bit(cpu);
 		} else if(jumpType == JumpType.ADD_TO_ADDRESS) {
-			byte jumpLength = (byte) getRelativeMemory(cpu, 1);
+			byte jumpLength = (byte) getOperand8bit(cpu);
 			destAddress = Util.getCPU().getProgramCounter() + jumpLength; // this value is a signed byte
 		} else if(jumpType == JumpType.CALL) {
-			destAddress = getRelativeMemory(cpu, 2);
-			destAddress2 = getRelativeMemory(cpu, 1);
-			destAddress = (destAddress << 8) | destAddress2;
+			destAddress = getOperand16bit(cpu);
+
 		} else if(jumpType == JumpType.RETURN) {
 			destAddress = cpu.popSP();
 		}
@@ -66,28 +62,24 @@ public class OpCodeJump extends OpCode {
 
 			}
 			if (jumpType == JumpType.CALL) {
-				Util.getCPU().pushSP(Util.getCPU().getProgramCounter() + getInstructionSize());
+				Util.getCPU().pushSP(Util.getCPU().getProgramCounter());
 				cpu.setProgramCounter(destAddress);
-				cpu.isJumping = true;
 				return 24;
 			}
 			if (jumpType == JumpType.RETURN) {
 				cpu.setProgramCounter(destAddress);
-				cpu.isJumping = true;
 				return 16;
 			}
 			cpu.setProgramCounter(destAddress);
 			return 12;
 		}
 		if (jumpType == JumpType.CALL) {
-			Util.getCPU().pushSP(Util.getCPU().getProgramCounter() + getInstructionSize());
+			Util.getCPU().pushSP(Util.getCPU().getProgramCounter());
 			cpu.setProgramCounter(destAddress);
-			cpu.isJumping = true;
 			return 24;
 		}
 		if (jumpType == JumpType.RETURN) {
 			cpu.setProgramCounter(destAddress);
-			cpu.isJumping = true;
 			return 16;
 		}
 		cpu.setProgramCounter(destAddress);

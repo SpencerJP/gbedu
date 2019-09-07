@@ -4,6 +4,7 @@ package cpu.opcodetypes;
 import cpu.GameBoyCPU;
 import cpu.opcodetypes.enums.OpCodeFunction;
 import cpu.opcodetypes.enums.OpCodeRegister;
+import main.Util;
 import mmu.GameBoyMMU;
 
 public class OpCodeBit extends OpCode {
@@ -74,12 +75,51 @@ public class OpCodeBit extends OpCode {
 			case RR:
 				result = getRegister(cpu, register) >> 1;
 				result |= getFlagC() ? (1 << 7) : 0;
-
 				setFlagC((getRegister(cpu, register) & 1) != 0);
-				setRegister(cpu, register, result & 0xff);
 				setFlagZ(result == 0);
 				setFlagN(false);
 				setFlagH(false);
+				setRegister(cpu, register, result & 0xff);
+				break;
+			case SRA:
+				result = (getRegister(cpu, register) >> 1) | (getRegister(cpu, register) & (1 << 7));
+				setFlagC((getRegister(cpu, register) & 1) != 0);
+				setFlagZ(result == 0);
+				setFlagN(false);
+				setFlagH(false);
+				setRegister(cpu, register, result & 0xff);
+				break;
+			case SRL:
+				result = (getRegister(cpu, register) >> 1);
+				setFlagC((getRegister(cpu, register) & 1) != 0);
+				setFlagZ(result == 0);
+				setFlagN(false);
+				setFlagH(false);
+				setRegister(cpu, register, result & 0xff);
+				break;
+			case SLA:
+				result = (getRegister(cpu, register) << 1) & 0xff;
+				setFlagC((getRegister(cpu, register) & (1<<7)) != 0);
+				setFlagZ(result == 0);
+				setFlagN(false);
+				setFlagH(false);
+				setRegister(cpu, register, result & 0xff);
+				break;
+			case SWAP:
+				int upper = getRegister(cpu, register) & 0xf0;
+				int lower = getRegister(cpu, register) & 0x0f;
+				result = (lower << 4) | (upper >> 4);
+				setFlagZ(result == 0);
+				setFlagN(false);
+				setFlagH(false);
+				setFlagC(false);
+				setRegister(cpu, register, result & 0xff);
+				break;
+			case RES:
+				setRegister(cpu, register, Util.resetBit(getRegister(cpu, register), bitPosition));
+				break;
+			case SET:
+				setRegister(cpu, register, Util.setBit(getRegister(cpu, register), bitPosition));
 				break;
 			default:
 				throw new UnsupportedOperationException("Not implemented");

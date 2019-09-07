@@ -29,14 +29,14 @@ public abstract class OpCode {
 	 * @return the amount of cycles produced
 	 */
 	public abstract int runCode(GameBoyCPU cpu, GameBoyMMU mmu) throws Exception;
-	
-	/**
-	 * @param offset of which memory position to read,
-	 * relative to the address of the current opcode
-	 * @return the memory at that position
-	 */
-	public int getRelativeMemory(GameBoyCPU cpu, int offset) {
-		return Util.getMemory().getMemoryAtAddress(cpu.getProgramCounter() + offset);
+
+
+	public int getOperand8bit(GameBoyCPU cpu) {
+		return cpu.get8BitOperand();
+	}
+
+	public int getOperand16bit(GameBoyCPU cpu) {
+		return cpu.get16BitOperand();
 	}
 
 	public int getInstructionSize() {

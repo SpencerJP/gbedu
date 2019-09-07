@@ -15,7 +15,7 @@ public class MissingOpCodeException extends Exception {
             opCode = opCode + Util.byteToHex(nextCode);
         }
         this.programCounter = programCounter;
-        opCodePosition = Util.byteToHex(programCounter);
+        opCodePosition = Util.byteToHex16(programCounter);
     }
 
     @Override

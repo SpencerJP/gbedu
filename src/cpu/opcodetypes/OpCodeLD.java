@@ -40,12 +40,10 @@ public class OpCodeLD extends OpCode {
 			case REGISTERS_DE:
 			case A_TO_ADDRESS:
 			case ADDRESS_TO_A:
-				source = getRelativeMemory(cpu,2);
-				source2 = getRelativeMemory(cpu,1);
-				source = (source << 8) | source2;
+				source = getOperand16bit(cpu);
 				break;
 			default:
-				source = getRelativeMemory(cpu,1);
+				source = getOperand8bit(cpu);
 				break;
 		}
 		if (destAddress != -1) {

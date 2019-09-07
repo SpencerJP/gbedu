@@ -16,7 +16,6 @@ import java.time.Instant;
 public class GameBoyCPU {
 
 	private static final double CPU_CLOCK_RATE = 4.1934;
-	public boolean isJumping = false;
 	GameBoyMMU mmu;
 	OpCodeFactory opFact;
 
@@ -36,6 +35,8 @@ public class GameBoyCPU {
 	private int lastOperation;
 	ArrayList<Integer> opCodesOnce = new ArrayList<Integer>();
 	public boolean setOnce = false; // todo delete
+	private int bit8Operand = 0;
+	private int bit16Operand = 0;
 
 
 	private int programCounter = 0;
@@ -58,6 +59,7 @@ public class GameBoyCPU {
 	
 	
 	public void run() throws Exception {
+		int totalCycles = 0;
 		int cycles = 0;
 		int prevFF40 = 0;
 		GameBoyGPU gpu = GameBoyGPU.getInstance();
@@ -65,17 +67,15 @@ public class GameBoyCPU {
 		
 		boolean runOnce = true;
 		while(true) {
-			Instant start = Instant.now();
 			cycles = runOperation();
+			totalCycles += cycles;
 			gpu.addClockTime(cycles);
-			Instant end = Instant.now();
-			Duration timeElapsed = Duration.between(start, end);
-			Thread.sleep(1);
 			gpu.run();
-			if (setOnce && runOnce) {
-				System.out.println(Util.byteToHex16(programCounter) + " graphics output here for some reason??!?!");
-				runOnce = false;
+			if (totalCycles >= 4194*2) {
+				totalCycles = 0;
+				Thread.sleep(1);
 			}
+
 		}
 	}
 	
@@ -85,24 +85,23 @@ public class GameBoyCPU {
 		try {
 			int opCodeNum = mmu.getMemoryAtAddress(getProgramCounter());
 			lastOperation = opCodeNum;
-			if (!opCodesOnce.contains(programCounter)) {
-				opCodesOnce.add(programCounter);
-				//System.out.println(Util.byteToHex16(Util.getMemory().getMemoryAtAddress(0x9904)) + " at " + Util.byteToHex16(programCounter));
-			}
 			OpCode op = opFact.constructOpCode(getProgramCounter(), opCodeNum);
 
 			if (op == null) {
 				throw new MissingOpCodeException(mmu, getProgramCounter());
 			}
-			Util.log("next opCode: " + Util.byteToHex16(mmu.getMemoryAtAddress(getProgramCounter())) + "["+op.toString()+"] at position " + getProgramCounter() + " (0x" + Util.byteToHex(getProgramCounter()) + ")");
 
+			Util.log("next opCode: " + Util.byteToHex(mmu.getMemoryAtAddress(getProgramCounter())) + "["+op.toString()+"] at position " + getProgramCounter() + " (0x" + Util.byteToHex16(getProgramCounter()) + ")");
+
+			if(op.getInstructionSize() == 2 && opCodeNum != 0xcb) {
+				store8BitOperand();
+			}
+			else if(op.getInstructionSize() == 3) {
+				store16BitOperand();
+			}
+
+			setProgramCounter(getProgramCounter() + op.getInstructionSize());
 			cycles = op.runCode(this, mmu);
-			if(!isJumping) {
-				setProgramCounter(getProgramCounter() + op.getInstructionSize());
-			}
-			else {
-				isJumping = false;
-			}
 		}
 		catch(MissingOpCodeException e) {
 			Util.log(Level.SEVERE, e.getMessage());
@@ -335,4 +334,21 @@ public class GameBoyCPU {
 	}
 
 
+	public int get8BitOperand() {
+		return bit8Operand;
+	}
+
+	public int get16BitOperand() {
+		return bit16Operand;
+	}
+
+	public void store8BitOperand() {
+		bit8Operand = Util.getMemory().getMemoryAtAddress(programCounter + 1);
+	}
+
+	public void store16BitOperand() {
+		int leftHalf = Util.getMemory().getMemoryAtAddress(programCounter + 2);
+		int rightHalf = Util.getMemory().getMemoryAtAddress(programCounter + 1);
+		bit16Operand = ((leftHalf << 8) | rightHalf);
+	}
 }

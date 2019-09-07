@@ -23,5 +23,6 @@ public enum OpCodeFunction {
 	RRC,
 	PUSH,
 	POP,
+    SRA,
 
 }

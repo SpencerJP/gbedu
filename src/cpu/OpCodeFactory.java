@@ -29,9 +29,13 @@ public class OpCodeFactory {
 		primaryOpCodeMap.put("18", new OpCodeJump("JR", 2, JumpType.ADD_TO_ADDRESS));
 		primaryOpCodeMap.put("20", new OpCodeJump("JR NZ", 2, JumpType.ADD_TO_ADDRESS, OpCodeCondition.NZ));
 		primaryOpCodeMap.put("28", new OpCodeJump("JR Z", 2, JumpType.ADD_TO_ADDRESS, OpCodeCondition.Z));
+		primaryOpCodeMap.put("c3", new OpCodeJump("JP a16", 3, JumpType.JUMP_TO_ADDRESS));
 
 		//XOR
 		primaryOpCodeMap.put("af", new OpCodeMath("XOR A",4, 1, OpCodeFunction.XOR, OpCodeRegister.REGISTER_A));
+
+		//AND
+		primaryOpCodeMap.put("e6", new OpCodeMath("AND d8",8, 2, OpCodeFunction.AND));
 
 		//INC
 		primaryOpCodeMap.put("13", new OpCodeMath("INC DE", 4, 1, OpCodeFunction.INC_16, OpCodeRegister.REGISTERS_DE));
@@ -51,8 +55,14 @@ public class OpCodeFactory {
 		primaryOpCodeMap.put("fe", new OpCodeMath("CP d8", 8, 2, OpCodeFunction.CP));
 		primaryOpCodeMap.put("be", new OpCodeMath("CP (HL)", 8, 1, OpCodeFunction.CP, OpCodeRegister.ADDRESS_HL));
 
+		//ADD
+		primaryOpCodeMap.put("86", new OpCodeMath("ADD A, (HL)", 8, 1, OpCodeFunction.ADD, OpCodeRegister.REGISTER_A, OpCodeRegister.ADDRESS_HL));
+		primaryOpCodeMap.put("19", new OpCodeMath("ADD HL, DE", 8, 1, OpCodeFunction.ADD, OpCodeRegister.ADDRESS_HL, OpCodeRegister.ADDRESS_DE));
+
+
 		//SUB
 		primaryOpCodeMap.put("90", new OpCodeMath("SUB B", 4, 1, OpCodeFunction.SUB, OpCodeRegister.REGISTER_B));
+		primaryOpCodeMap.put("d6", new OpCodeMath("SUB d8", 4, 2, OpCodeFunction.SUB));
 
 		//RLA
 		primaryOpCodeMap.put("17", new OpCodeBit("RLA",4, 1, OpCodeFunction.RL, OpCodeRegister.REGISTER_A));
@@ -86,6 +96,7 @@ public class OpCodeFactory {
 		//x6 and xE loading registers from data (8 codes)
 		primaryOpCodeMap.put("0e", new OpCodeLD("LD C,d8",8, 2, OpCodeRegister.REGISTER_C));
 		primaryOpCodeMap.put("06", new OpCodeLD("LD B,d8",8, 2, OpCodeRegister.REGISTER_B));
+		primaryOpCodeMap.put("16", new OpCodeLD("LD D,d8",8, 2, OpCodeRegister.REGISTER_D));
 		primaryOpCodeMap.put("3e", new OpCodeLD("LD A,d8",8, 2, OpCodeRegister.REGISTER_A));
 		primaryOpCodeMap.put("2e", new OpCodeLD("LD L,d8",8, 2, OpCodeRegister.REGISTER_L));
 		primaryOpCodeMap.put("1e", new OpCodeLD("LD L,d8",8, 2, OpCodeRegister.REGISTER_E));
@@ -107,8 +118,11 @@ public class OpCodeFactory {
 		primaryOpCodeMap.put("4f", new OpCodeLD("LD C,A",4, 1, OpCodeRegister.REGISTER_C, OpCodeRegister.REGISTER_A));
 		primaryOpCodeMap.put("57", new OpCodeLD("LD D,A",4, 1, OpCodeRegister.REGISTER_D, OpCodeRegister.REGISTER_A));
 		primaryOpCodeMap.put("67", new OpCodeLD("LD H,A",4, 1, OpCodeRegister.REGISTER_H, OpCodeRegister.REGISTER_A));
-		primaryOpCodeMap.put("7b", new OpCodeLD("LD E,A",4, 1, OpCodeRegister.REGISTER_A, OpCodeRegister.REGISTER_E));
+		primaryOpCodeMap.put("78", new OpCodeLD("LD A,B",4, 1, OpCodeRegister.REGISTER_A, OpCodeRegister.REGISTER_B));
+		primaryOpCodeMap.put("7b", new OpCodeLD("LD A,E",4, 1, OpCodeRegister.REGISTER_A, OpCodeRegister.REGISTER_E));
+		primaryOpCodeMap.put("5f", new OpCodeLD("LD E,A",4, 1, OpCodeRegister.REGISTER_E, OpCodeRegister.REGISTER_A));
 		primaryOpCodeMap.put("7c", new OpCodeLD("LD A,H",4, 1, OpCodeRegister.REGISTER_A, OpCodeRegister.REGISTER_H));
+		primaryOpCodeMap.put("7d", new OpCodeLD("LD A,L",4, 1, OpCodeRegister.REGISTER_A, OpCodeRegister.REGISTER_L));
 		primaryOpCodeMap.put("77", new OpCodeLD("LD (HL),A",8, 1, OpCodeRegister.ADDRESS_HL, OpCodeRegister.REGISTER_A));
 
 
@@ -123,6 +137,7 @@ public class OpCodeFactory {
 	private void generateCBPrefixCodes() {
 		CBOpCodeMap.put("7c", new OpCodeBit("BIT H,7",8, 2, OpCodeFunction.BIT, OpCodeRegister.REGISTER_H, 7));
 		CBOpCodeMap.put("11", new OpCodeBit("RL C",8, 2, OpCodeFunction.RL, OpCodeRegister.REGISTER_C));
+		CBOpCodeMap.put("3f", new OpCodeBit("SRL A",8, 2, OpCodeFunction.SRL, OpCodeRegister.REGISTER_A));
 		
 	}
 

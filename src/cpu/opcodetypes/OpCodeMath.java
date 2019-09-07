@@ -6,15 +6,23 @@ import cpu.opcodetypes.enums.OpCodeRegister;
 import mmu.GameBoyMMU;
 
 public class OpCodeMath extends OpCode {
-	
+
 	private OpCodeFunction function;
 	private int source;
 	private OpCodeRegister register;
-	
+	private OpCodeRegister register2;
+
 	public OpCodeMath(String doc,int cycles, int instructionSize, OpCodeFunction function, OpCodeRegister register) {
 		super(doc, cycles, instructionSize);
 		this.function = function;
 		this.register = register;
+	}
+
+	public OpCodeMath(String doc,int cycles, int instructionSize, OpCodeFunction function, OpCodeRegister register, OpCodeRegister register2) {
+		super(doc, cycles, instructionSize);
+		this.function = function;
+		this.register = register;
+		this.register2 = register2;
 	}
 
 	public OpCodeMath(String doc,int cycles, int instructionSize, OpCodeFunction function) {
@@ -28,64 +36,42 @@ public class OpCodeMath extends OpCode {
 		boolean cFlag;
 		int result;
 		int accum;
+		if (register == null) {
+			source = getOperand8bit(cpu);
+		}
+		else {
+			source = getRegister(cpu, register);
+		}
 		switch(function) {
 			case XOR:
-				if (register == null) {
-					source = getRelativeMemory(cpu, 1);
-				}
-				else {
-					source = getRegister(cpu, register);
-				}
 				setAccumulator(cpu, source^getAccumulator());
-				setFlags(false, false, false, (getRegister(cpu,register) == 0));
+				setFlags(false, false, false, (getAccumulator() == 0));
 				break;
 			case AND:
-				if (register == null) {
-					source = getRelativeMemory(cpu, 1);
-				}
-				else {
-					source = getRegister(cpu, register);
-				}
 				setAccumulator(cpu, source & getAccumulator());
-				setFlags(false, true, false, (getRegister(cpu,register) == 0));
+				setFlags(false, true, false, (getAccumulator() == 0));
 				break;
 			case OR:
-				if (register == null) {
-					source = getRelativeMemory(cpu, 1);
-				}
-				else {
-					source = getRegister(cpu, register);
-				}
 				setAccumulator(cpu, source | getAccumulator());
-				setFlags(false, false, false, (getRegister(cpu,register) == 0));
+				setFlags(false, false, false, (getAccumulator() == 0));
 				break;
 			case ADD:
-				if (register == null) {
-					source = getRelativeMemory(cpu, 1);
-				}
-				else {
-					source = getRegister(cpu, register);
-				}
-				hFlag = (((getAccumulator() & 0xf) + (getRegister(cpu, register) & 0xf)) & 0x10) == 0x10;
-				result = getAccumulator() + getRegister(cpu, register);
+				hFlag = (((getRegister(cpu, register) & 0xf) + (getRegister(cpu, register2) & 0xf)) & 0x10) == 0x10;
+				result = getRegister(cpu, register) + getRegister(cpu, register2);
 				cFlag = result > 255;
-				setAccumulator(cpu, result & 0xFF);
-				setFlagZ(getAccumulator() == 0x00);
+				setRegister(cpu, register, result);
+				setFlagZ(getRegister(cpu, register) == 0x00);
 				setFlagH(hFlag);
 				setFlagC(cFlag);
 				break;
 			case SUB:
-				if (register == null) {
-					source = getRelativeMemory(cpu, 1);
-				}else {
-					source = getRegister(cpu, register);
-				}
 				accum = getAccumulator();
 				setFlagZ(((accum - source) & 0xff) == 0);
 				setFlagN(true);
 				setFlagH((0x0f & source) > (0x0f & accum));
 				setFlagC(source > accum);
 				setAccumulator(cpu, ((accum - source) & 0xff));
+				break;
 			case PUSH:
 				cpu.pushSP(getRegister(cpu, register));
 				break;
@@ -113,9 +99,6 @@ public class OpCodeMath extends OpCode {
 				setRegister(cpu, register, (getRegister(cpu, register) - 1) & 0xffff);
 				break;
 			case CP:
-				if (register == null) {
-					source = getRelativeMemory(cpu, 1);
-				}
 				accum = getAccumulator();
 				setFlagZ(((accum - source) & 0xff) == 0);
 				setFlagN(true);

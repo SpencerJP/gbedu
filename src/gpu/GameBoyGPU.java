@@ -143,9 +143,6 @@ public class GameBoyGPU implements Runnable {
         int mapOffset = bgTilemap == 1 ? 0x9C00 : 0x9800;
 
         mapOffset = mapOffset + (((line + scrollY & 0xFF) >> 3) * 32);
-        if (Util.getCPU().getProgramCounter() == 0x55) {
-        	System.out.println(Util.byteToHex16(mapOffset));
-        }
         int lineOffset = (scrollX >> 3);
 
         int y = (line + scrollY) & 7;
