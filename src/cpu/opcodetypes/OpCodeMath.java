@@ -9,6 +9,7 @@ public class OpCodeMath extends OpCode {
 
 	private OpCodeFunction function;
 	private int source;
+	private int source2;
 	private OpCodeRegister register;
 	private OpCodeRegister register2;
 
@@ -36,11 +37,18 @@ public class OpCodeMath extends OpCode {
 		boolean cFlag;
 		int result;
 		int accum;
+		int carry;
 		if (register == null) {
 			source = getOperand8bit(cpu);
 		}
 		else {
 			source = getRegister(cpu, register);
+		}
+		if(register2 == null) {
+			source2 = getAccumulator();
+		}
+		else {
+			source2 = getRegister(cpu, register2);
 		}
 		switch(function) {
 			case XOR:
@@ -56,13 +64,29 @@ public class OpCodeMath extends OpCode {
 				setFlags(false, false, false, (getAccumulator() == 0));
 				break;
 			case ADD:
-				hFlag = (((getRegister(cpu, register) & 0xf) + (getRegister(cpu, register2) & 0xf)) & 0x10) == 0x10;
-				result = getRegister(cpu, register) + getRegister(cpu, register2);
-				cFlag = result > 255;
+				result = source + source2;
 				setRegister(cpu, register, result);
-				setFlagZ(getRegister(cpu, register) == 0x00);
+				setFlagZ((result & 0xff) == 0x00);
+				setFlagN(false);
+				setFlagH((((source & 0xf) + (source2 & 0xf)) & 0x10) == 0x10);
+				setFlagC(result > 0xff);
+				break;
+			case ADD_16:
+				setFlagN(false);
+				setFlagH((source & 0x0fff) + (source2 & 0x0fff) > 0x0fff);
+				setFlagC(source + source2 > 0xffff);
+				setRegister(cpu, register, (source + source2) & 0xffff);
+				break;
+			case ADC:
+				carry = (getFlagC() ? 1 : 0);
+				hFlag = ((source & 0x0f) + (source2 & 0x0f) + carry > 0x0f);
+				result = source + source2 + carry;
+				cFlag = result > 0xff;
+				setFlagZ((result & 0xFF) == 0);
+				setFlagN(false);
 				setFlagH(hFlag);
 				setFlagC(cFlag);
+				setRegister(cpu, register, result);
 				break;
 			case SUB:
 				accum = getAccumulator();
@@ -72,6 +96,16 @@ public class OpCodeMath extends OpCode {
 				setFlagC(source > accum);
 				setAccumulator(cpu, ((accum - source) & 0xff));
 				break;
+			case SBC:
+				carry = (getFlagC() ? 1 : 0);
+				result = getAccumulator() - source - carry;
+
+				setFlagZ((result & 0xff) == 0);
+				setFlagN(true);
+				setFlagH(((getAccumulator()  ^ source ^ (result & 0xff)) & (1 << 4)) != 0);
+				setFlagC(result < 0);
+				setAccumulator(cpu, result);
+				break;
 			case PUSH:
 				cpu.pushSP(getRegister(cpu, register));
 				break;
@@ -79,24 +113,24 @@ public class OpCodeMath extends OpCode {
 				setRegister(cpu, register, cpu.popSP());
 				break;
 			case INC:
-				result = (getRegister(cpu, register) + 1) & 0xff;
+				result = (source + 1) & 0xff;
 				setRegister(cpu, register, result);
 				setFlagZ(result == 0);
 				setFlagN(false);
-				setFlagH((getRegister(cpu, register) & 0x0f) == 0x0f);
+				setFlagH((source & 0x0f) == 0x0f);
 				break;
 			case DEC:
-				result = (getRegister(cpu, register) - 1) & 0xff;
+				result = (source - 1) & 0xff;
 				setRegister(cpu, register, result);
 				setFlagZ(result == 0);
 				setFlagN(false);
-				setFlagH((getRegister(cpu, register) & 0x0f) == 0x0);
+				setFlagH((source & 0x0f) == 0x0);
 				break;
 			case INC_16:
-				setRegister(cpu, register, (getRegister(cpu, register) + 1) & 0xffff);
+				setRegister(cpu, register, (source + 1) & 0xffff);
 				break;
 			case DEC_16:
-				setRegister(cpu, register, (getRegister(cpu, register) - 1) & 0xffff);
+				setRegister(cpu, register, (source - 1) & 0xffff);
 				break;
 			case CP:
 				accum = getAccumulator();
@@ -104,6 +138,31 @@ public class OpCodeMath extends OpCode {
 				setFlagN(true);
 				setFlagH((0x0f & source) > (0x0f & accum));
 				setFlagC(source > accum);
+				break;
+			case DAA:
+				accum = getAccumulator();
+				if (getFlagN()) {
+				if (getFlagH()) {
+					accum = (accum - 6) & 0xff;
+				}
+				if (getFlagC()) {
+					accum = (accum - 0x60) & 0xff;
+				}
+			} else {
+				if (getFlagH() || (accum & 0xf) > 9) {
+					accum += 0x06;
+				}
+				if (getFlagC() || accum > 0x9f) {
+					accum += 0x60;
+				}
+			}
+				setFlagH(false);
+				if (accum > 0xff) {
+					setFlagC(true);
+				}
+				accum &= 0xff;
+				setFlagZ(accum == 0);
+				setAccumulator(cpu, accum);
 				break;
 			default:
 				throw new UnsupportedOperationException("Math function not implemented");

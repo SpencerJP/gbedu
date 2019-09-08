@@ -4,6 +4,7 @@ import main.Util;
 
 public class GpuRegisters {
     public static final int LCDC = 0xff40;
+    public static final int STAT = 0xff41;
     public static final int SCROLL_Y = 0xFF42;
     public static final int SCROLL_X = 0xFF43;
     public static final int CURRENT_SCAN_LINE = 0xFF44;
@@ -18,6 +19,17 @@ public class GpuRegisters {
     public static final int SPRITE_SIZE = 2;
     public static final int SPRITES_ENABLED = 1;
     public static final int BG_WINDOW_PRIORITY = 0;
+
+
+    public static int getStatMode() {
+        int retVal = Util.getMemory().getMemoryAtAddress(STAT) & 0b11;
+        return retVal;
+    }
+
+    public static void setStatMode(int mode) {
+        mode = ((Util.getMemory().getMemoryAtAddress(STAT) >> 2) << 2) | mode;
+        Util.getMemory().setMemoryAtAddress(STAT, mode);
+    }
 
     public static int getLCDC() {
         return Util.getMemory().getMemoryAtAddress(LCDC);

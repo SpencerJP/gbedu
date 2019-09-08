@@ -14,8 +14,8 @@ public class GameBoyGPU implements Runnable {
     private static final int SCAN_VRAM_TIME = 172;
     private static final int HBLANK_TIME = 204;
     private static final int VBLANK_TIME = 456;
-    public static final int WIDTH_PIXELS = 160;
-    public static final int HEIGHT_PIXELS = 144;
+    static final int WIDTH_PIXELS = 160;
+    private static final int HEIGHT_PIXELS = 144;
     private static final int TILE_COUNT = 384;
     private static final int TILE_PIXEL_SIZE = 8;
 
@@ -35,7 +35,6 @@ public class GameBoyGPU implements Runnable {
 
     private JFrame frame;
     private GameBoyLCD screen;
-    public GpuModes mode;
     public int clock = 0;
     private int[][][] tileset = new int[TILE_COUNT][TILE_PIXEL_SIZE][TILE_PIXEL_SIZE];
     public Color[] pixels = new Color[WIDTH_PIXELS*(HEIGHT_PIXELS - 1)]; // long array of pixels. Wrapping is handled in code
@@ -49,9 +48,10 @@ public class GameBoyGPU implements Runnable {
         screen=new GameBoyLCD(WIDTH_PIXELS, HEIGHT_PIXELS);
         screen.setBounds(0,0,WIDTH_PIXELS,HEIGHT_PIXELS);
         frame.add(screen);
-        frame.setSize(WIDTH_PIXELS+20,HEIGHT_PIXELS + 40);
+        frame.setSize(WIDTH_PIXELS+16,HEIGHT_PIXELS + 38);
         frame.setLayout(null);
         frame.setVisible(true);
+        GpuRegisters.setStatMode(SCANLINE_OAM);
 
         frame.addWindowListener(new WindowAdapter() {
             @Override
@@ -59,7 +59,6 @@ public class GameBoyGPU implements Runnable {
                 System.exit(0);
             }
         });
-        mode = GpuModes.SCANLINE_OAM;
         for(Color c : pixels) {
         	c = baseColoursGB[0];
         }
@@ -84,19 +83,26 @@ public class GameBoyGPU implements Runnable {
     }
 
 
+
+    public static final int HBLANK = 0;
+    public static final int VBLANK = 1;
+    public static final int SCANLINE_OAM = 2;
+    public static final int SCANLINE_VRAM = 3;
+
     @Override
     public void run() {
-        switch(mode) {
+        int currentMode = GpuRegisters.getStatMode();
+        switch(currentMode) {
             case SCANLINE_OAM:
                 if(clock >= SCAN_OAM_TIME) {
                     clock = 0;
-                    mode = GpuModes.SCANLINE_VRAM;
+                    GpuRegisters.setStatMode(SCANLINE_VRAM);
                 }
                 break;
             case SCANLINE_VRAM:
                 if(clock >= SCAN_VRAM_TIME) {
                     clock = 0;
-                    mode = GpuModes.HBLANK;
+                    GpuRegisters.setStatMode(HBLANK);
                     renderScan();
                 }
                 break;
@@ -106,12 +112,12 @@ public class GameBoyGPU implements Runnable {
                     GpuRegisters.incrementScanLine();
                     if(GpuRegisters.getCurrentScanline() == HEIGHT_PIXELS - 1)
                     {
-                        mode = GpuModes.VBLANK;
                         drawData();
+                        GpuRegisters.setStatMode(VBLANK);
                     }
                     else
                     {
-                        mode = GpuModes.SCANLINE_OAM;
+                        GpuRegisters.setStatMode(SCANLINE_OAM);
                     }
                 }
                 break;
@@ -121,19 +127,22 @@ public class GameBoyGPU implements Runnable {
                     GpuRegisters.incrementScanLine();
                     if(GpuRegisters.getCurrentScanline() > 153)
                     {
-                        mode = GpuModes.SCANLINE_OAM;
+                        GpuRegisters.setStatMode(SCANLINE_OAM);
                         GpuRegisters.setCurrentScanline(0);
                     }
                 }
                 break;
-
+            default:
+                break;
         }
     }
-    private static int every10 = 0;
     private void renderScan() {
     	if (!LCDEnabled) {
     		return;
     	}
+    	if(GpuRegisters.getCurrentScanline() > HEIGHT_PIXELS) {
+            return;
+        }
 
         int bgTilemap = GpuRegisters.getBackgroundTilemap();
         int bgTileset = GpuRegisters.getBackgroundTileset();

@@ -29,7 +29,7 @@ public class GameBoyCPU {
 
 
 	private int lastOperation;
-	ArrayList<Integer> opCodesOnce = new ArrayList<Integer>();
+	ArrayList<Integer> programPositionsOnce = new ArrayList<Integer>();
 	public boolean setOnce = false; // todo delete
 	private int bit8Operand = 0;
 	private int bit16Operand = 0;
@@ -37,6 +37,8 @@ public class GameBoyCPU {
 	private boolean interruptsEnabled = false;
 
 	private int programCounter = 0;
+
+
 	
 	
 	private static GameBoyCPU singletonInstance;
@@ -87,17 +89,35 @@ public class GameBoyCPU {
 			if (op == null) {
 				throw new MissingOpCodeException(mmu, getProgramCounter());
 			}
-
-			Util.log("next opCode: " + Util.byteToHex(mmu.getMemoryAtAddress(getProgramCounter())) + "["+op.toString()+"] at position " + getProgramCounter() + " (0x" + Util.byteToHex16(getProgramCounter()) + ")");
-
 			if(op.getInstructionSize() == 2 && opCodeNum != 0xcb) {
 				store8BitOperand();
+				Util.log("next opCode: " + Util.byteToHex(mmu.getMemoryAtAddress(getProgramCounter())) + "["+op.toString()+"], operand: " + Util.byteToHex(get8BitOperand()) + " at position " + getProgramCounter() + " (0x" + Util.byteToHex16(getProgramCounter()) + ")");
+				if(!programPositionsOnce.contains(programCounter)) {
+					programPositionsOnce.add(programCounter);
+
+					System.out.println("PC: " + Util.byteToHex16(programCounter) + " -> Running " + op.toString() + " with operand " + Util.byteToHex(get8BitOperand()));
+				}
 			}
 			else if(op.getInstructionSize() == 3) {
 				store16BitOperand();
-			}
+				Util.log("next opCode: " + Util.byteToHex(mmu.getMemoryAtAddress(getProgramCounter())) + "["+op.toString()+"], operand: " + Util.byteToHex16(get16BitOperand()) + " at position " + getProgramCounter() + " (0x" + Util.byteToHex16(getProgramCounter()) + ")");
+				if(!programPositionsOnce.contains(programCounter)) {
+					programPositionsOnce.add(programCounter);
 
+					System.out.println("PC: " + Util.byteToHex16(programCounter) + " -> Running " + op.toString() + " with operand " + Util.byteToHex16(get16BitOperand()));
+				}
+			}
+			else {
+				Util.log("next opCode: " + Util.byteToHex(mmu.getMemoryAtAddress(getProgramCounter())) + "["+op.toString()+"] at position " + getProgramCounter() + " (0x" + Util.byteToHex16(getProgramCounter()) + ")");
+				if(!programPositionsOnce.contains(programCounter)) {
+					programPositionsOnce.add(programCounter);
+
+					System.out.println("PC: " + Util.byteToHex16(programCounter) + " -> Running " + op.toString());
+				}
+			}
 			setProgramCounter(getProgramCounter() + op.getInstructionSize());
+
+
 			cycles = op.runCode(this, mmu);
 		}
 		catch(MissingOpCodeException e) {

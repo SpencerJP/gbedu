@@ -11,8 +11,7 @@ import java.io.IOException;
 
 
 public class GameBoyMMU {
-	
-	private File bootrom;
+
 	private File file;
 	private int[] memory;
 	public boolean disableBootrom;

@@ -15,7 +15,8 @@ public class Main {
         GameBoyCPU cpu = GameBoyCPU.getInstance();
 		long start = System.currentTimeMillis();
 		try {
-			memory.initialize("test_tetris.gb");
+//			memory.initialize("test_tetris.gb");
+			memory.initialize("opus5.gb");
 
 			//System.out.println(memory.getMemoryAtAddress(0x104));
 		} catch (IOException e) {

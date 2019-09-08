@@ -2,6 +2,7 @@ package cpu.opcodetypes;
 
 
 import cpu.GameBoyCPU;
+import cpu.opcodetypes.enums.OpCodeBitFunction;
 import cpu.opcodetypes.enums.OpCodeFunction;
 import cpu.opcodetypes.enums.OpCodeRegister;
 import main.Util;
@@ -9,11 +10,11 @@ import mmu.GameBoyMMU;
 
 public class OpCodeBit extends OpCode {
 	
-	private OpCodeFunction function;
+	private OpCodeBitFunction function;
 	private int bitPosition;
 	private OpCodeRegister register;
 
-	public OpCodeBit(String doc, int cycles, int instructionSize, OpCodeFunction function, OpCodeRegister register, int position ) {
+	public OpCodeBit(String doc, int cycles, int instructionSize, OpCodeBitFunction function, OpCodeRegister register, int position ) {
 		super(doc, cycles, instructionSize);
 		this.function = function;
 		this.bitPosition = position;
@@ -21,7 +22,7 @@ public class OpCodeBit extends OpCode {
 		
 	}
 
-	public OpCodeBit(String doc, int cycles, int instructionSize, OpCodeFunction function, OpCodeRegister register) {
+	public OpCodeBit(String doc, int cycles, int instructionSize, OpCodeBitFunction function, OpCodeRegister register) {
 		super(doc, cycles, instructionSize);
 		this.function = function;
 		this.register = register;
@@ -128,6 +129,11 @@ public class OpCodeBit extends OpCode {
 				break;
 			case CCF:
 				setFlagC(!getFlagC());
+				setFlagN(false);
+				setFlagH(false);
+				break;
+			case SCF:
+				setFlagC(true);
 				setFlagN(false);
 				setFlagH(false);
 				break;

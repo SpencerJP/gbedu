@@ -88,10 +88,18 @@ public abstract class OpCode {
 			case REGISTERS_AF:
 				cpu.setAF(source);
 				break;
-			case ADDRESS_HL:
-				address = cpu.getHL();
-				Util.getMemory().setMemoryAtAddress(address, source);
-				break;
+            case ADDRESS_HL:
+                address = cpu.getHL();
+                Util.getMemory().setMemoryAtAddress(address, source);
+                break;
+            case ADDRESS_BC:
+                address = cpu.getBC();
+                Util.getMemory().setMemoryAtAddress(address, source);
+                break;
+            case ADDRESS_DE:
+                address = cpu.getDE();
+                Util.getMemory().setMemoryAtAddress(address, source);
+                break;
 			case ADDRESS_HL_INC:
 				address = cpu.getHL();
 				cpu.setHL(address + 1);
