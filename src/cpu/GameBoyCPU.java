@@ -62,7 +62,7 @@ public class GameBoyCPU {
 		int cycles = 0;
 		GameBoyGPU gpu = GameBoyGPU.getInstance();
 
-		GameBoyMMU.addAddressToWatchlist(0xff80);
+		//GameBoyMMU.addAddressToWatchlist(0xff80);
 		
 		boolean runOnce = true;
 		while(true) {
