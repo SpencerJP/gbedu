@@ -12,133 +12,8 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
-public class BitTests {
+public class BitTests extends SuperTest {
 
-	public static GameBoyCPU cpu = GameBoyCPU.getInstance();
-	public static GameBoyMMU mmu = GameBoyMMU.getInstance();
-	public static OpCodeFactory fact = OpCodeFactory.getInstance();
-
-	@BeforeClass
-	public static void setUpBeforeClass() throws Exception {
-		mmu.initialize("test_tetris.gb");
-		mmu.disableBootrom = true;
-	}
-
-	@Before
-	public void setUp() throws Exception {
-		cpu.setF(0);
-	}
-
-
-	private void createAndRunOpCode(int opCodeNum)  {
-		OpCode op = fact.constructOpCode(0, opCodeNum);
-		System.out.println(op.toString());
-		try {
-			op.runCode(cpu, mmu);
-		} catch (Exception e) {
-			e.printStackTrace();
-			fail();
-		}
-
-	}
-
-	private void createAndRunOpCode8bitOperand(int opCodeNum, int operand)  {
-		mmu.setMemoryAtAddress(1, operand);
-		OpCode op = fact.constructOpCode(0, opCodeNum);
-		System.out.println(op.toString());
-		try {
-			op.runCode(cpu, mmu);
-		} catch (Exception e) {
-			e.printStackTrace();
-			fail();
-		}
-	}
-
-	private void createAndRunOpCode16bitOperand(int opCodeNum, int operand, int operand2)  {
-		mmu.setMemoryAtAddress(1, operand);
-		mmu.setMemoryAtAddress(2, operand2);
-		OpCode op = fact.constructOpCode(0, opCodeNum);
-		System.out.println(op.toString());
-		try {
-			op.runCode(cpu, mmu);
-		} catch (Exception e) {
-			e.printStackTrace();
-			fail();
-		}
-	}
-
-	private void createAndRunCBOpCode(int opCodeNum)  {
-		mmu.setMemoryAtAddress(1, opCodeNum);
-		OpCode op = fact.constructOpCode(0, 0xCB);
-		System.out.println(op.toString());
-		try {
-			op.runCode(cpu, mmu);
-		} catch (Exception e) {
-			e.printStackTrace();
-			fail();
-		}
-
-	}
-
-	private void assertFlags(String zString, String nString, String hString, String cString) {
-		boolean z,n,h,c;
-		z = zString.equals("true") ? true : false;
-		n = nString.equals("true") ? true : false;
-		h = hString.equals("true") ? true : false;
-		c = cString.equals("true") ? true : false;
-
-
-		z = zString.equals("1") ? true : false;
-		n = nString.equals("1") ? true : false;
-		h = hString.equals("1") ? true : false;
-		c = cString.equals("1") ? true : false;
-		try {
-			if(!zString.equals("-")) {
-				assertEquals(cpu.getFlagZ(),z);
-			}
-			if(!nString.equals("-")) {
-				assertEquals(cpu.getFlagN(), n);
-			}
-			if(!hString.equals("-")) {
-				assertEquals(cpu.getFlagH(), h);
-			}
-			if(!cString.equals("-")) {
-				assertEquals(cpu.getFlagC(), c);
-			}
-		}
-		catch(Error e ) {
-			fail(Util.flagsToString());
-		}
-
-	}
-
-	private void assertFlags(int zi, int ni, int hi, int ci) {
-		boolean z,n,h,c;
-		z = (zi == 1)  ? true : false;
-		n = (ni == 1) ? true : false;
-		h = (hi == 1)  ? true : false;
-		c = (ci == 1) ? true : false;
-
-
-		try {
-			if(zi != -1) {
-				assertEquals(cpu.getFlagZ(),z);
-			}
-			if(ni != -1)  {
-				assertEquals(cpu.getFlagN(), n);
-			}
-			if(hi != -1)  {
-				assertEquals(cpu.getFlagH(), h);
-			}
-			if(ci != -1)  {
-				assertEquals(cpu.getFlagC(), c);
-			}
-		}
-		catch(Error e ) {
-			fail(Util.flagsToString());
-		}
-
-	}
 
 	@Test
 	public void testRL_registerC() {
@@ -212,6 +87,30 @@ public class BitTests {
 		assertEquals(cpu.getA(), 0b11111111 & 0xFF);
 		assertFlags(0,1,0,0);
 
+	}
+	
+	@Test
+	public void testBit() {
+		cpu.setA(0b01010101 & 0xFF);
+		cpu.setF(0);
+		createAndRunCBOpCode(0x47);
+		assertFlags(0,0,1,-1);
+
+		cpu.setA(0b11010100 & 0xFF);
+		cpu.setF(0);
+		createAndRunCBOpCode(0x47);
+		assertFlags(1,0,1,-1);
+		
+
+		cpu.setA(0b01010101 & 0xFF);
+		cpu.setF(0);
+		createAndRunCBOpCode(0x47);
+		assertFlags(0,0,1,-1);
+
+		cpu.setA(0b11010100 & 0xFF);
+		cpu.setF(0);
+		createAndRunCBOpCode(0x77);
+		assertFlags(0,0,1,-1);
 	}
 
 }

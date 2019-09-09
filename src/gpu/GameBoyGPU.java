@@ -218,6 +218,9 @@ public class GameBoyGPU implements Runnable {
     }
 
     public void updateTile(int address) {
+    	if(Util.getMemory().disableBootrom) {
+    		System.out.println("test");
+    	}
         // Work out which tile and row was updated
         int tileNum = (address >> 4) & 0xFF;
         int y = (address >> 1) & 7;
@@ -369,7 +372,7 @@ public class GameBoyGPU implements Runnable {
         for(int i = 0; i < 8; i++) {
             for(int j = 0; j < 8; j++) {
             	//System.out.println(Arrays.toString(tileset[tileNum]));
-            	String character = (tileset[tileNum][i][j] == 1) ? "\u2588" : " " ;
+            	String character = (tileset[tileNum][i][j] == 0) ? " " : tileset[tileNum][i][j]+"";
                 output = output + character;
             }
             output = output + "\n";

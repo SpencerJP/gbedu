@@ -72,7 +72,11 @@ public class GameBoyCPU {
 			gpu.run();
 			if (totalCycles >= 4194*2) {
 				totalCycles = 0;
-				Thread.sleep(1);
+				//Thread.sleep(1);
+			}
+			
+			if(programCounter == 0x178) {
+				Util.getLogger().setLevel(Level.INFO);
 			}
 
 		}

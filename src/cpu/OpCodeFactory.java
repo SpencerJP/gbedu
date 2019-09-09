@@ -83,10 +83,15 @@ public class OpCodeFactory {
 		//TODO understand stop, probably when I figure out interrupts
 		primaryOpCodeMap.put("10", new OpCodeSTOP());
 
-		//JUMPS
+		//JUMP RELATIVE TO ADDRESS
 		primaryOpCodeMap.put("18", new OpCodeJump("JR", 2, JumpType.ADD_TO_ADDRESS));
 		primaryOpCodeMap.put("20", new OpCodeJump("JR NZ", 2, JumpType.ADD_TO_ADDRESS, OpCodeCondition.NZ));
+		primaryOpCodeMap.put("30", new OpCodeJump("JR NC", 2, JumpType.ADD_TO_ADDRESS, OpCodeCondition.NC));
 		primaryOpCodeMap.put("28", new OpCodeJump("JR Z", 2, JumpType.ADD_TO_ADDRESS, OpCodeCondition.Z));
+		primaryOpCodeMap.put("38", new OpCodeJump("JR C", 2, JumpType.ADD_TO_ADDRESS, OpCodeCondition.C));
+		
+		
+		//JUMP TO ADDRESS
 		primaryOpCodeMap.put("c3", new OpCodeJump("JP a16", 3, JumpType.JUMP_TO_ADDRESS));
 		primaryOpCodeMap.put("e9", new OpCodeJump("JP (HL)", 1, JumpType.JUMP_TO_ADDRESS, OpCodeRegister.REGISTERS_HL));
         primaryOpCodeMap.put("ca", new OpCodeJump("JP Z a16", 3, JumpType.JUMP_TO_ADDRESS, OpCodeCondition.Z));
