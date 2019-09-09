@@ -123,7 +123,7 @@ public class OpCodeBit extends OpCode {
 				setRegister(cpu, register, Util.setBit(getRegister(cpu, register), bitPosition));
 				break;
 			case CPL:
-				setAccumulator(cpu, ~getAccumulator());
+				setAccumulator(cpu, ~getAccumulator() & 0xFF);
 				setFlagN(true);
 				setFlagH(true);
 				break;

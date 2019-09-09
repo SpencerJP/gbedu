@@ -88,6 +88,14 @@ public class BitTests extends SuperTest {
 		assertFlags(0,1,0,0);
 
 	}
+
+	@Test
+	public void testCPL() {
+		cpu.setA(0b01010101 & 0xFF);
+		cpu.setF(0);
+		createAndRunOpCode(0x2f);
+		assertEquals(cpu.getA(), 0b10101010 & 0xFF);
+	}
 	
 	@Test
 	public void testBit() {
