@@ -2,12 +2,14 @@ package mmu;
 
 
 import bootrom.BootRom;
+import gpu.GameBoyGPU;
 import main.Util;
 import gpu.GpuRegisters;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 
 
 public class GameBoyMMU {
@@ -75,7 +77,15 @@ public class GameBoyMMU {
 		}
 	}
 
+	public static ArrayList<Integer> addressWatchlist = new ArrayList<Integer>();
+	public static void addAddressToWatchlist(int address) {
+		addressWatchlist.add(address);
+	}
 	public void setMemoryAtAddress(int address, int source) {
+		if(addressWatchlist.contains(address)) {
+			System.out.println("0x"+Util.byteToHex16(address) + " -> 0x" + Util.byteToHex(source));
+		}
+
 		switch(address & 0xF000) {
 			case 0x8000:
 			case 0x9000:
@@ -86,6 +96,7 @@ public class GameBoyMMU {
 			case 0xF000:
 				if((address == IORegisters.BOOTROM_STATUS) && source == 0x01) {
 					disableBootrom = true;
+					GameBoyGPU.getInstance().resetVRAM();
 				}
 				if(address == 0xff40) {
 					GpuRegisters.setLCDC(source);

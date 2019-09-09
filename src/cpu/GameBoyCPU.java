@@ -60,9 +60,9 @@ public class GameBoyCPU {
 	public void run() throws Exception {
 		int totalCycles = 0;
 		int cycles = 0;
-		int prevFF40 = 0;
 		GameBoyGPU gpu = GameBoyGPU.getInstance();
-		long timeCarry = 0;
+
+		GameBoyMMU.addAddressToWatchlist(0xff80);
 		
 		boolean runOnce = true;
 		while(true) {

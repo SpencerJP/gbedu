@@ -140,7 +140,7 @@ public class OpCodeFactory {
 		primaryOpCodeMap.put("e6", new OpCodeMath("AND d8",8, 2, OpCodeFunction.AND));
 
 		//INC
-        primaryOpCodeMap.put("03", new OpCodeMath("INC HL", 8, 1, OpCodeFunction.INC_16, OpCodeRegister.REGISTERS_BC));
+        primaryOpCodeMap.put("03", new OpCodeMath("INC BC", 8, 1, OpCodeFunction.INC_16, OpCodeRegister.REGISTERS_BC));
 		primaryOpCodeMap.put("13", new OpCodeMath("INC DE", 8, 1, OpCodeFunction.INC_16, OpCodeRegister.REGISTERS_DE));
         primaryOpCodeMap.put("23", new OpCodeMath("INC HL", 8, 1, OpCodeFunction.INC_16, OpCodeRegister.REGISTERS_HL));
         primaryOpCodeMap.put("33", new OpCodeMath("INC SP", 8, 1, OpCodeFunction.INC_16, OpCodeRegister.REGISTERS_SP));

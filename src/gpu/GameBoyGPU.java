@@ -1,6 +1,7 @@
 package gpu;
 
 import main.Util;
+import mmu.GameBoyMMU;
 
 import javax.swing.*;
 import java.awt.*;
@@ -140,9 +141,6 @@ public class GameBoyGPU implements Runnable {
     	if (!LCDEnabled) {
     		return;
     	}
-    	if(GpuRegisters.getCurrentScanline() > HEIGHT_PIXELS) {
-            return;
-        }
 
         int bgTilemap = GpuRegisters.getBackgroundTilemap();
         int bgTileset = GpuRegisters.getBackgroundTileset();
@@ -217,10 +215,11 @@ public class GameBoyGPU implements Runnable {
         vram[address] = source;
     }
 
+    public void resetVRAM() {
+        vram = new int[65536];
+    }
+
     public void updateTile(int address) {
-    	if(Util.getMemory().disableBootrom) {
-    		System.out.println("test");
-    	}
         // Work out which tile and row was updated
         int tileNum = (address >> 4) & 0xFF;
         int y = (address >> 1) & 7;
@@ -235,7 +234,6 @@ public class GameBoyGPU implements Runnable {
             int color1 = (vram[address] & sx) != 0 ? 1 : 0;
             int color2 = (vram[address + 1] & sx) != 0 ? 2 : 0;
             tileset[tileNum][y][x] = color1 + color2;
-
         }
     }
 
@@ -367,12 +365,12 @@ public class GameBoyGPU implements Runnable {
     }
 
     public void printTile(int tileNum) {
-        System.out.println("TILE DUMP: 0x" + Util.byteToHex16(tileNum) + "\n");
+        System.out.println("TILE DUMP: 0x" + Util.byteToHex16(tileNum) + "");
         String output = "";
         for(int i = 0; i < 8; i++) {
             for(int j = 0; j < 8; j++) {
             	//System.out.println(Arrays.toString(tileset[tileNum]));
-            	String character = (tileset[tileNum][i][j] == 0) ? " " : tileset[tileNum][i][j]+"";
+            	String character = (tileset[tileNum][i][j] == 0) ? "0" : tileset[tileNum][i][j]+"";
                 output = output + character;
             }
             output = output + "\n";
