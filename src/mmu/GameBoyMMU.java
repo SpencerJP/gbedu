@@ -28,7 +28,12 @@ public class GameBoyMMU {
 
 	}
 	
-	public void initialize(String filename) throws IOException {
+	public void initialize(String filename, boolean disableBootrom) throws IOException {
+	    this.disableBootrom = disableBootrom;
+	    if(disableBootrom) {
+	        Util.getCPU().setProgramCounter(0x100);
+	        Util.getGPU().enableLCD();
+        }
 		file = new File(filename);
 
 		FileInputStream fStream = new FileInputStream(file);
@@ -96,6 +101,7 @@ public class GameBoyMMU {
 				memory[address] = source;
 				break;
 			case 0xF000:
+                memory[address] = source;
 				if((address == IORegisters.BOOTROM_STATUS) && source == 0x01) {
 					disableBootrom = true;
 					GameBoyCPU.getInstance().resetDebugPositions();
@@ -104,7 +110,6 @@ public class GameBoyMMU {
 				if(address == 0xff40) {
 					GpuRegisters.setLCDC(source);
 				}
-				memory[address] = source;
 				break;
 			default:
 				memory[address] = source;

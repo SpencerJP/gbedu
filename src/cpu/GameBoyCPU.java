@@ -79,9 +79,10 @@ public class GameBoyCPU {
 				totalCycles = 0;
 				//Thread.sleep(1);
 			}
-			
-			
 
+			if (programCounter == 0x02d3) {
+					System.out.println();
+			}
 		}
 	}
 	
@@ -101,8 +102,10 @@ public class GameBoyCPU {
 				Util.log("next opCode: " + Util.byteToHex(mmu.getMemoryAtAddress(getProgramCounter())) + "["+op.toString()+"], operand: " + Util.byteToHex(get8BitOperand()) + " at position " + getProgramCounter() + " (0x" + Util.byteToHex16(getProgramCounter()) + ")");
 				if(!programPositionsOnce.contains(programCounter)) {
 					programPositionsOnce.add(programCounter);
+					if(Util.getLogger().getLevel() != Level.INFO) {
+						System.out.println("PC: " + Util.byteToHex16(programCounter) + " -> Running " + op.toString() + " with operand " + Util.byteToHex(get8BitOperand()));
+					}
 
-					System.out.println("PC: " + Util.byteToHex16(programCounter) + " -> Running " + op.toString() + " with operand " + Util.byteToHex(get8BitOperand()));
 				}
 			}
 			else if(op.getInstructionSize() == 3) {
@@ -110,16 +113,18 @@ public class GameBoyCPU {
 				Util.log("next opCode: " + Util.byteToHex(mmu.getMemoryAtAddress(getProgramCounter())) + "["+op.toString()+"], operand: " + Util.byteToHex16(get16BitOperand()) + " at position " + getProgramCounter() + " (0x" + Util.byteToHex16(getProgramCounter()) + ")");
 				if(!programPositionsOnce.contains(programCounter)) {
 					programPositionsOnce.add(programCounter);
-
-					System.out.println("PC: " + Util.byteToHex16(programCounter) + " -> Running " + op.toString() + " with operand " + Util.byteToHex16(get16BitOperand()));
+					if(Util.getLogger().getLevel() != Level.INFO) {
+						System.out.println("PC: " + Util.byteToHex16(programCounter) + " -> Running " + op.toString() + " with operand " + Util.byteToHex16(get16BitOperand()));
+					}
 				}
 			}
 			else {
 				Util.log("next opCode: " + Util.byteToHex(mmu.getMemoryAtAddress(getProgramCounter())) + "["+op.toString()+"] at position " + getProgramCounter() + " (0x" + Util.byteToHex16(getProgramCounter()) + ")");
 				if(!programPositionsOnce.contains(programCounter)) {
 					programPositionsOnce.add(programCounter);
-
-					System.out.println("PC: " + Util.byteToHex16(programCounter) + " -> Running " + op.toString());
+					if(Util.getLogger().getLevel() != Level.INFO) {
+						System.out.println("PC: " + Util.byteToHex16(programCounter) + " -> Running " + op.toString());
+					}
 				}
 			}
 			setProgramCounter(getProgramCounter() + op.getInstructionSize());

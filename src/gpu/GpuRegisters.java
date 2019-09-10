@@ -36,10 +36,12 @@ public class GpuRegisters {
     }
 
     public static void setLCDC(int val) {
-    	if (val == 0x91) {
-    		GameBoyGPU.getInstance().enableLCD();
-    	}
-        
+        if (getDisplayOn()) {
+            GameBoyGPU.getInstance().enableLCD();
+        }
+        else {
+            GameBoyGPU.getInstance().disableLCD();
+        }
     }
 
     public static int getScrollX() {
@@ -94,78 +96,6 @@ public class GpuRegisters {
 
     public static boolean getDisplayOn() {
         return Util.getBit(getLCDC(), LCD_DISPLAY_ENABLED);
-    }
-
-
-    public static void setLCDCBackground(boolean set) {
-        if (set) {
-            Util.getMemory().setMemoryAtAddress(LCDC,Util.setBit(getLCDC(), 0));
-        }
-        else {
-            Util.getMemory().setMemoryAtAddress(LCDC,Util.resetBit(getLCDC(), 0));
-        }
-    }
-
-    public static void setLCDCSprites(boolean set) {
-        if (set) {
-            Util.getMemory().setMemoryAtAddress(LCDC,Util.setBit(getLCDC(), 1));
-        }
-        else {
-            Util.getMemory().setMemoryAtAddress(LCDC,Util.resetBit(getLCDC(), 1));
-        }
-    }
-
-    public static void setLCDCSpriteSize(int i) {
-        if (i == 8*16) {
-            Util.getMemory().setMemoryAtAddress(LCDC,Util.setBit(getLCDC(), 2));
-        }
-        else {
-            Util.getMemory().setMemoryAtAddress(LCDC,Util.resetBit(getLCDC(), 2));
-        }
-    }
-
-    public static void setBackgroundTilemap(int i) {
-        if (i == 1) {
-            Util.getMemory().setMemoryAtAddress(LCDC,Util.setBit(getLCDC(), 3));
-        }
-        else {
-            Util.getMemory().setMemoryAtAddress(LCDC,Util.resetBit(getLCDC(), 3));
-        }
-    }
-
-    public static void setBackgroundTileset(int i) {
-        if (i == 1) {
-            Util.getMemory().setMemoryAtAddress(LCDC,Util.setBit(getLCDC(), 4));
-        }
-        else {
-            Util.getMemory().setMemoryAtAddress(LCDC,Util.resetBit(getLCDC(), 4));
-        }
-    }
-    public static void setWindowOn(boolean set) {
-        if (set) {
-            Util.getMemory().setMemoryAtAddress(LCDC,Util.setBit(getLCDC(), 5));
-        }
-        else {
-            Util.getMemory().setMemoryAtAddress(LCDC,Util.resetBit(getLCDC(), 5));
-        }
-    }
-
-    public static void setWindowTilemap(int i) {
-        if (i == 1) {
-            Util.getMemory().setMemoryAtAddress(LCDC,Util.setBit(getLCDC(), 6));
-        }
-        else {
-            Util.getMemory().setMemoryAtAddress(LCDC,Util.resetBit(getLCDC(), 6));
-        }
-    }
-
-    public static void setDisplayOn(boolean set) {
-        if (set) {
-            Util.getMemory().setMemoryAtAddress(LCDC,Util.setBit(getLCDC(), 7));
-        }
-        else {
-            Util.getMemory().setMemoryAtAddress(LCDC,Util.resetBit(getLCDC(), 7));
-        }
     }
 
     public static void incrementScanLine() {

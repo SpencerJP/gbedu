@@ -173,9 +173,9 @@ public class GameBoyGPU implements Runnable {
 //        }
         
         int tile = vram[mapOffset + lineOffset];
-        if(bgTileset == 1 && tile < 128) {
-            tile += 256;
-        }
+//        if(bgTileset == 1 && tile < 128) {
+//            tile += 256;
+//        }
         for(int i = 0; i < WIDTH_PIXELS; i++)
         {
             color = palette[tileset[tile][y][x]];
@@ -226,6 +226,9 @@ public class GameBoyGPU implements Runnable {
     }
 
     public void updateTile(int address) {
+        if((address & 1) == 1) {
+            address--;
+        }
         // Work out which tile and row was updated
         int tileNum = (address >> 4) & 0xFF;
         int y = (address >> 1) & 7;

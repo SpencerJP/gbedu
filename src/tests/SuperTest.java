@@ -20,8 +20,7 @@ public class SuperTest {
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
-		mmu.initialize("test_tetris.gb");
-		mmu.disableBootrom = true;
+		mmu.initialize("test_tetris.gb", true);
 	}
 
 	@Before
