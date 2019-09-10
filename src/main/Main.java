@@ -1,7 +1,6 @@
 package main;
 
 import cpu.GameBoyCPU;
-
 import gpu.GameBoyGPU;
 import mmu.GameBoyMMU;
 
@@ -15,8 +14,8 @@ public class Main {
         GameBoyCPU cpu = GameBoyCPU.getInstance();
 		long start = System.currentTimeMillis();
 		try {
-			//memory.initialize("test_tetris.gb");
-			memory.initialize("drmarioworld.gb");
+			memory.initialize("test_tetris.gb");
+//			memory.initialize("drmarioworld.gb");
 //			memory.initialize("opus5.gb");
 
 			//System.out.println(memory.getMemoryAtAddress(0x104));

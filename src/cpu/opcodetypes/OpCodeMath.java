@@ -104,7 +104,7 @@ public class OpCodeMath extends OpCode {
 				setFlagN(true);
 				setFlagH(((getAccumulator()  ^ source ^ (result & 0xff)) & (1 << 4)) != 0);
 				setFlagC(result < 0);
-				setAccumulator(cpu, result);
+				setAccumulator(cpu, result & 0xff);
 				break;
 			case PUSH:
 				cpu.pushSP(getRegister(cpu, register));
@@ -142,20 +142,20 @@ public class OpCodeMath extends OpCode {
 			case DAA:
 				accum = getAccumulator();
 				if (getFlagN()) {
-				if (getFlagH()) {
-					accum = (accum - 6) & 0xff;
+					if (getFlagH()) {
+						accum = (accum - 6) & 0xff;
+					}
+					if (getFlagC()) {
+						accum = (accum - 0x60) & 0xff;
+					}
+				} else {
+					if (getFlagH() || (accum & 0xf) > 9) {
+						accum += 0x06;
+					}
+					if (getFlagC() || accum > 0x9f) {
+						accum += 0x60;
+					}
 				}
-				if (getFlagC()) {
-					accum = (accum - 0x60) & 0xff;
-				}
-			} else {
-				if (getFlagH() || (accum & 0xf) > 9) {
-					accum += 0x06;
-				}
-				if (getFlagC() || accum > 0x9f) {
-					accum += 0x60;
-				}
-			}
 				setFlagH(false);
 				if (accum > 0xff) {
 					setFlagC(true);
@@ -170,7 +170,7 @@ public class OpCodeMath extends OpCode {
 		return cycles;
 	}
 
-	
+ 	
 	
 
 }

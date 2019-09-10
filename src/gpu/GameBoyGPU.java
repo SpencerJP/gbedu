@@ -2,11 +2,15 @@ package gpu;
 
 import main.Util;
 import mmu.GameBoyMMU;
+import mmu.Interrupts;
 
 import javax.swing.*;
+
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+
+import joypad.Controller;
 
 public class GameBoyGPU implements Runnable {
 
@@ -52,6 +56,7 @@ public class GameBoyGPU implements Runnable {
         frame.setSize(WIDTH_PIXELS+16,HEIGHT_PIXELS + 38);
         frame.setLayout(null);
         frame.setVisible(true);
+        frame.addKeyListener(new Controller());
         GpuRegisters.setStatMode(SCANLINE_OAM);
 
         frame.addWindowListener(new WindowAdapter() {
@@ -125,6 +130,7 @@ public class GameBoyGPU implements Runnable {
             case VBLANK:
                 if(clock >= VBLANK_TIME) {
                     clock = 0;
+                    Interrupts.setVblankInterrupt();
                     GpuRegisters.incrementScanLine();
                     if(GpuRegisters.getCurrentScanline() > 153)
                     {

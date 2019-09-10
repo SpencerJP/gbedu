@@ -59,6 +59,7 @@ public class OpCodeJump extends OpCode {
 				destAddress = Util.getCPU().getProgramCounter() + jumpLength; // this value is a signed byte
 				break;
 			case RETURN:
+			case RETI:
 				destAddress = cpu.popSP();
 				break;
 			case RESTART:
@@ -109,6 +110,12 @@ public class OpCodeJump extends OpCode {
 			return 24;
 		}
 		if (jumpType == JumpType.RETURN) {
+			cpu.setProgramCounter(destAddress);
+			return 16;
+		}
+		
+		if (jumpType == JumpType.RETI) {
+			Util.getCPU().setInterruptsEnabled(true);
 			cpu.setProgramCounter(destAddress);
 			return 16;
 		}

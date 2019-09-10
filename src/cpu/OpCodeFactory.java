@@ -108,6 +108,7 @@ public class OpCodeFactory {
         primaryOpCodeMap.put("d8", new OpCodeJump("RET C", 1, JumpType.RETURN, OpCodeCondition.C));
         primaryOpCodeMap.put("c0", new OpCodeJump("RET NZ", 1, JumpType.RETURN, OpCodeCondition.NZ));
         primaryOpCodeMap.put("d0", new OpCodeJump("RET NC", 1, JumpType.RETURN, OpCodeCondition.NC));
+        primaryOpCodeMap.put("d9", new OpCodeJump("RETI", 1, JumpType.RETI));
 
         //RESTART
         primaryOpCodeMap.put("ef", new OpCodeJump("RST 0x28", 1, JumpType.RESTART, 0x28));
@@ -385,5 +386,15 @@ public class OpCodeFactory {
 			return CBOpCodeMap.get(hexCBOp);
 		}
 		return primaryOpCodeMap.get(hexString);
+	}
+	
+	public int getOpCodeFromDocString(String docString) {
+		for(Map.Entry<String, OpCode> entry : primaryOpCodeMap.entrySet()) {
+			if(entry.getValue().toString().equals(docString)) {
+				return Util.hexToByte(entry.getKey());
+			}
+		}
+			
+		return -1;
 	}
 }

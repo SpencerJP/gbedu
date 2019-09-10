@@ -41,6 +41,20 @@ public class SuperTest {
 		}
 
 	}
+	
+	public void createAndRunOpCode(String docString)  {
+		int opCodeNum = fact.getOpCodeFromDocString(docString);
+		OpCode op = fact.constructOpCode(cpu.getProgramCounter(), opCodeNum);
+		System.out.println(op.toString());
+		try {
+			cpu.setProgramCounter(cpu.getProgramCounter() + op.getInstructionSize());
+			op.runCode(cpu, mmu);
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail();
+		}
+
+	}
 
 	public void createAndRunOpCode8bitOperand(int opCodeNum, int operand)  {
 		mmu.setMemoryAtAddress(cpu.getProgramCounter() + 1, operand);
@@ -54,11 +68,41 @@ public class SuperTest {
 			fail();
 		}
 	}
-
+	
+	public void createAndRunOpCode8bitOperand(String docString, int operand)  {
+		int opCodeNum = fact.getOpCodeFromDocString(docString);
+		mmu.setMemoryAtAddress(cpu.getProgramCounter() + 1, operand);
+		cpu.store8BitOperand();
+		OpCode op = fact.constructOpCode(cpu.getProgramCounter(), opCodeNum);
+		System.out.println(op.toString());
+		try {
+			op.runCode(cpu, mmu);
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail();
+		}
+	}
+	
 	public void createAndRunOpCode16bitOperand(int opCodeNum, int operand, int operand2)  {
 		mmu.setMemoryAtAddress(cpu.getProgramCounter() + 1, operand);
 		mmu.setMemoryAtAddress(cpu.getProgramCounter() + 2, operand2);
 		cpu.store16BitOperand();
+		OpCode op = fact.constructOpCode(cpu.getProgramCounter(), opCodeNum);
+		System.out.println(op.toString());
+		try {
+			cpu.setProgramCounter(cpu.getProgramCounter() + op.getInstructionSize());
+			op.runCode(cpu, mmu);
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail();
+		}
+	}
+
+	public void createAndRunOpCode16bitOperand(String docString, int operand, int operand2)  {
+		mmu.setMemoryAtAddress(cpu.getProgramCounter() + 1, operand);
+		mmu.setMemoryAtAddress(cpu.getProgramCounter() + 2, operand2);
+		cpu.store16BitOperand();
+		int opCodeNum = fact.getOpCodeFromDocString(docString);
 		OpCode op = fact.constructOpCode(cpu.getProgramCounter(), opCodeNum);
 		System.out.println(op.toString());
 		try {

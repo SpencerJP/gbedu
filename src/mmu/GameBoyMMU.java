@@ -11,6 +11,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import cpu.GameBoyCPU;
+
 
 public class GameBoyMMU {
 
@@ -96,6 +98,7 @@ public class GameBoyMMU {
 			case 0xF000:
 				if((address == IORegisters.BOOTROM_STATUS) && source == 0x01) {
 					disableBootrom = true;
+					GameBoyCPU.getInstance().resetDebugPositions();
 					GameBoyGPU.getInstance().resetVRAM();
 				}
 				if(address == 0xff40) {

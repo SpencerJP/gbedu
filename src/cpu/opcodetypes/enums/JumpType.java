@@ -5,5 +5,6 @@ public enum JumpType {
     ADD_TO_ADDRESS,
     CALL,
     RETURN,
-    RESTART
+    RESTART, 
+    RETI
 }

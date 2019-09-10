@@ -27,5 +27,40 @@ public class MathTests extends SuperTest {
 		
 		
 	}
+	
+	@Test
+	public void testXOR() {
+		cpu.setF(0);
+		cpu.setA(0b11001100);
+		cpu.setC(0b11001100);
+		createAndRunOpCode("XOR C");
+		assertEquals(cpu.getA(), 0);
+		
+
+		cpu.setF(0);
+		cpu.setA(0b11001100);
+		cpu.setC(0b00110011);
+		createAndRunOpCode("XOR C");
+		assertEquals(cpu.getA(), 0b11111111);
+	}
+	
+	@Test
+	public void testSBC() {
+		cpu.setF(0b00010000);
+		cpu.setA(0b11111111);
+		cpu.setC(0b11111111);
+		createAndRunOpCode("SBC A,C");
+		System.out.println(cpu.getA()+"");
+	}
+	
+	@Test
+	public void testSUB() {
+		cpu.setF(0b00010000);
+		cpu.setA(0b11111111);
+		cpu.setC(0b11111111);
+		createAndRunOpCode("SUB C");
+		System.out.println(cpu.getA()+"");
+	}
+
 
 }
