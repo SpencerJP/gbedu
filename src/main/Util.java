@@ -10,7 +10,9 @@ import java.util.logging.Logger;
 public class Util {
 
 	public static Logger logger = Logger.getLogger("GameBoy");
-	static {
+    public static boolean isDebugMode = false;
+
+    static {
 		logger.setLevel(Level.SEVERE);
 	}
 

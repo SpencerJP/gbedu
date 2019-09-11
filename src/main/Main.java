@@ -9,6 +9,7 @@ import java.util.logging.Level;
 
 public class Main {
 	public static void main(String[] args) {
+		Util.isDebugMode = true;
 		GameBoyMMU memory = GameBoyMMU.getInstance();
 		GameBoyGPU gpu = GameBoyGPU.getInstance();
         GameBoyCPU cpu = GameBoyCPU.getInstance();

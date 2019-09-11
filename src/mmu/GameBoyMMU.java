@@ -92,7 +92,7 @@ public class GameBoyMMU {
 		if(addressWatchlist.contains(address)) {
 			if(address == 0xff40) {
 				if ((0b00010000 & source) == 0b10000) {
-					System.out.println(Util.byteToHex16(Util.getCPU().getProgramCounter()));
+		//			System.out.println(Util.byteToHex16(Util.getCPU().getProgramCounter()));
 				}
 			}
 //			System.out.println("0x"+Util.byteToHex16(address) + " -> 0x" + Util.byteToHex(source) + " / 0b" + Util.toBinaryString(source)  + " at programCounter " + Util.byteToHex16(Util.getCPU().getProgramCounter()));
@@ -104,6 +104,9 @@ public class GameBoyMMU {
 				Util.getGPU().setVRAM(address, source);
 				Util.getGPU().updateTile(address);
 				memory[address] = source;
+				if(Util.isDebugMode && address >= 0x9800 && address <= 0x9fff) {
+					GameBoyGPU.getInstance().debugUpdateBackgroundWindow();
+				}
 				break;
 			case 0xF000:
                 memory[address] = source;

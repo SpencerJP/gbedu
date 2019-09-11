@@ -24,6 +24,8 @@ public class GameBoyGPU implements Runnable {
     private static final int TILE_COUNT = 384;
     private static final int TILE_PIXEL_SIZE = 8;
 
+    public static final int DEBUG_BACKGROUND_DIMENSION = 256;
+    private Color[] backgroundPixels = new Color[DEBUG_BACKGROUND_DIMENSION*DEBUG_BACKGROUND_DIMENSION*2];
 
     private static final Color DARKEST_GREEN = new Color(15, 56, 15);
     private static final Color DARK_GREEN = new Color(48, 98, 48);
@@ -40,6 +42,10 @@ public class GameBoyGPU implements Runnable {
 
     private JFrame frame;
     private GameBoyLCD screen;
+    private JFrame debugFrame;
+    private DebugWindow debugWindow;
+
+
     public int clock = 0;
     private int[][][] tileset = new int[TILE_COUNT][TILE_PIXEL_SIZE][TILE_PIXEL_SIZE];
     public Color[] pixels = new Color[WIDTH_PIXELS*(HEIGHT_PIXELS - 1)]; // long array of pixels. Wrapping is handled in code
@@ -55,11 +61,33 @@ public class GameBoyGPU implements Runnable {
         screen.setBounds(0,0,WIDTH_PIXELS,HEIGHT_PIXELS);
         frame.add(screen);
         frame.setSize(WIDTH_PIXELS+16,HEIGHT_PIXELS + 38);
+
         frame.setLayout(null);
+        GraphicsConfiguration gc = frame.getGraphicsConfiguration();
+        Rectangle bounds = gc.getBounds();
+        Dimension size = frame.getPreferredSize();
+        frame.setLocation((int) ((bounds.width / 2) - (size.getWidth() / 2)),
+                (int) ((bounds.height / 2) - (size.getHeight() / 2)));
         frame.setVisible(true);
         frame.addKeyListener(new Controller());
+
         GpuRegisters.setStatMode(SCANLINE_OAM);
 
+        if(Util.isDebugMode) {
+            debugFrame= new JFrame("Debug");
+            debugWindow=new DebugWindow(DEBUG_BACKGROUND_DIMENSION, DEBUG_BACKGROUND_DIMENSION*2);
+            debugWindow.setBounds(0,0,DEBUG_BACKGROUND_DIMENSION,DEBUG_BACKGROUND_DIMENSION*2);
+            debugFrame.add(debugWindow);
+            debugFrame.setSize(DEBUG_BACKGROUND_DIMENSION+16,DEBUG_BACKGROUND_DIMENSION*2 + 38);
+            debugFrame.setLayout(null);
+            debugFrame.setVisible(true);
+            debugFrame.addWindowListener(new WindowAdapter() {
+                @Override
+                public void windowClosing(WindowEvent e) {
+                    System.exit(0);
+                }
+            });
+        }
         frame.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
@@ -79,6 +107,41 @@ public class GameBoyGPU implements Runnable {
         }
         return singletonInstance;
     }
+
+    public void debugUpdateBackgroundWindow() {
+        Color[] palette = createPalette();
+        int lineNum = 0;
+
+        int x = 0;
+        int currentPixel = 0;
+        for(int i = 0x9800; i < 0x9fff; i = i + 32){
+            int tileNum = vram[i];
+            int y = lineNum & 7;
+            for(int j = 0; j < DEBUG_BACKGROUND_DIMENSION; j++)
+            {
+                int lineOffset = 0;
+                backgroundPixels[currentPixel] = palette[tileset[tileNum][y][x]];
+                currentPixel++;
+
+                x++;
+                if(x == 8)
+                {
+                    x = 0;
+                    lineOffset = lineOffset + 1;
+                    tileNum = vram[i + lineOffset];
+//                    if (bgTileset == 1 && tileNum < 128) {
+//                        tileNum += 256;
+//                    }
+                }
+            }
+            lineNum++;
+        }
+        debugWindow.drawData(backgroundPixels);
+
+
+
+    }
+
 
     public void enableLCD() {
         this.LCDEnabled = true;

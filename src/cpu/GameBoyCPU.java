@@ -79,7 +79,7 @@ public class GameBoyCPU {
 				//Thread.sleep(1);
 			}
 
-			if (programCounter == 0x02d3) {
+			if (programCounter == 0x0384) {
 					int i = 0;
 			}
 		}
@@ -183,7 +183,6 @@ public class GameBoyCPU {
 			setInterruptsEnabled(false);
 			pushSP(programCounter);
 			setProgramCounter(0x60);
-			return;
 		}
 	}
 
