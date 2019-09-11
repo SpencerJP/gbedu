@@ -62,9 +62,8 @@ public class GameBoyCPU {
 		int cycles = 0;
 		GameBoyGPU gpu = GameBoyGPU.getInstance();
 
-		//GameBoyMMU.addAddressToWatchlist(0xff80);
+		GameBoyMMU.addAddressToWatchlist(0xff40);
 		
-		boolean runOnce = true;
 		while(true) {
 			cycles = runOperation();
 			totalCycles += cycles;
@@ -81,7 +80,7 @@ public class GameBoyCPU {
 			}
 
 			if (programCounter == 0x02d3) {
-					System.out.println();
+					int i = 0;
 			}
 		}
 	}
@@ -152,6 +151,7 @@ public class GameBoyCPU {
 			setInterruptsEnabled(false);
 			pushSP(programCounter);
 			setProgramCounter(0x40);
+			return;
 		}
 		
 		if(Interrupts.isLCDStatInterruptEnabled() && Interrupts.hasLCDStatInterruptOccurred()) {
@@ -159,6 +159,7 @@ public class GameBoyCPU {
 			setInterruptsEnabled(false);
 			pushSP(programCounter);
 			setProgramCounter(0x48);
+			return;
 		}
 		
 		if(Interrupts.isTimerInterruptEnabled() && Interrupts.hasTimerInterruptOccurred()) {
@@ -166,6 +167,7 @@ public class GameBoyCPU {
 			setInterruptsEnabled(false);
 			pushSP(programCounter);
 			setProgramCounter(0x50);
+			return;
 		}
 		
 		if(Interrupts.isSerialInterruptEnabled() && Interrupts.hasSerialInterruptOccurred()) {
@@ -173,6 +175,7 @@ public class GameBoyCPU {
 			setInterruptsEnabled(false);
 			pushSP(programCounter);
 			setProgramCounter(0x58);
+			return;
 		}
 		
 		if(Interrupts.isJoypadInterruptEnabled() && Interrupts.hasJoypadInterruptOccurred()) {
@@ -180,6 +183,7 @@ public class GameBoyCPU {
 			setInterruptsEnabled(false);
 			pushSP(programCounter);
 			setProgramCounter(0x60);
+			return;
 		}
 	}
 

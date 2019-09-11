@@ -14,7 +14,7 @@ public class GpuRegisters {
     public static final int LCD_DISPLAY_ENABLED = 7;
     public static final int WINDOW_TILEMAP_SELECT = 6;
     public static final int WINDOW_DISPLAY_ENABLED = 5;
-    public static final int TILE_DATA_SELECT = 4;
+    public static final int TILE_DATA_SELECT = 4; 
     public static final int BG_TILEMAP_SELECT = 3;
     public static final int SPRITE_SIZE = 2;
     public static final int SPRITES_ENABLED = 1;

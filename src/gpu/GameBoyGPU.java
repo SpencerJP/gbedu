@@ -45,6 +45,7 @@ public class GameBoyGPU implements Runnable {
     public Color[] pixels = new Color[WIDTH_PIXELS*(HEIGHT_PIXELS - 1)]; // long array of pixels. Wrapping is handled in code
     
     private int[] vram = new int[65536];
+    private Sprite[] oam = new Sprite[40];
     private boolean LCDEnabled = false;
 
 
@@ -80,7 +81,6 @@ public class GameBoyGPU implements Runnable {
     }
 
     public void enableLCD() {
-       // GpuRegisters.setDisplayOn(true);
         this.LCDEnabled = true;
     }
 
@@ -118,6 +118,7 @@ public class GameBoyGPU implements Runnable {
                     GpuRegisters.incrementScanLine();
                     if(GpuRegisters.getCurrentScanline() == HEIGHT_PIXELS - 1)
                     {
+                    	renderSprites();
                         drawData();
                         GpuRegisters.setStatMode(VBLANK);
                     }
@@ -143,13 +144,17 @@ public class GameBoyGPU implements Runnable {
                 break;
         }
     }
-    private void renderScan() {
+
+
+
+	private void renderScan() {
     	if (!LCDEnabled) {
     		return;
     	}
 
         int bgTilemap = GpuRegisters.getBackgroundTilemap();
         int bgTileset = GpuRegisters.getBackgroundTileset();
+        bgTileset = 0;
         int line = GpuRegisters.getCurrentScanline();
         int scrollX = GpuRegisters.getScrollX();
         int scrollY = GpuRegisters.getScrollY();
@@ -166,16 +171,11 @@ public class GameBoyGPU implements Runnable {
         int canvasOffSet = (line * WIDTH_PIXELS);
 
         Color color;
-//        every10++;
-//        if (every10 == 10) {
-//        	System.out.println(Util.byteToHex(Util.getCPU().getProgramCounter()) +" -> " + Util.byteToHex16(mapOffset));
-//        	every10 = 0;
-//        }
         
         int tile = vram[mapOffset + lineOffset];
-//        if(bgTileset == 1 && tile < 128) {
-//            tile += 256;
-//        }
+        if(bgTileset == 1 && tile < 128) {
+            tile += 256;
+        }
         for(int i = 0; i < WIDTH_PIXELS; i++)
         {
             color = palette[tileset[tile][y][x]];
@@ -194,36 +194,16 @@ public class GameBoyGPU implements Runnable {
             }
         }
     }
+	
 
-    private Color[] createPalette() {
-        Color[] palette = new Color[4];
-        int paletteRegister = GpuRegisters.getBGPalette();
-        int color0 = paletteRegister & 0b00000011;
-        int color1 = (paletteRegister >> 2) & 0b00000011;
-        int color2 = (paletteRegister >> 4)  & 0b00000011;
-        int color3 = (paletteRegister >> 6)  & 0b00000011;
-        palette[0] = baseColoursGB[color0];
-        palette[1] = baseColoursGB[color1];
-        palette[2] = baseColoursGB[color2];
-        palette[3] = baseColoursGB[color3];
-        return palette;
-    }
+    private void renderSprites() {
+    	for(int i = 0; i < oam.length; i++) {
+    		
+    	}
+		
+	}
+    
 
-    public void drawData() {
-        screen.drawData(pixels);
-    }
-
-    public void addClockTime(int cycles) {
-        this.clock = this.clock + cycles;
-    }
-
-    public void setVRAM(int address, int source) {
-        vram[address] = source;
-    }
-
-    public void resetVRAM() {
-        vram = new int[65536];
-    }
 
     public void updateTile(int address) {
         if((address & 1) == 1) {
@@ -246,6 +226,66 @@ public class GameBoyGPU implements Runnable {
         }
     }
 
+    public void updateSpriteData(int address, int value) {
+    		address -=0xFE00;
+    	    int obj=address>>2;
+    	    if(obj<40)
+    	    {
+    	      switch(address & 0b11)
+    	      {
+    	        case 0:
+    	        	oam[obj].pos.y = value - 0x10;
+    	        	break;
+    	        case 1:
+    	        	oam[obj].pos.x = value - 0x8;
+    	        	break;
+    	        case 2:
+    	          if(GpuRegisters.getLCDCSpriteSize() == 8*16) {
+    	        	  oam[obj].tileNum = (value&0xFE);
+    	          }
+    	          else {
+    	        	  oam[obj].tileNum = value;
+    	          }
+    	          break;
+    	        case 3:
+    	        	oam[obj].palette = ((value & 0x10) == 1)? 1 : 0;
+    	        	oam[obj].xFlip = ((value & 0x20) == 1)? true: false;
+    	        	oam[obj].yFlip = ((value & 0x40) == 1)? true: false;
+    	        	oam[obj].hasPriority = ((value & 0x80) ==  0)? true : false;
+    	          break;
+    	     }
+    	    }
+    }
+    
+    private Color[] createPalette() {
+        Color[] palette = new Color[4];
+        int paletteRegister = GpuRegisters.getBGPalette();
+        int color0 = paletteRegister & 0b11;
+        int color1 = (paletteRegister >> 2) & 0b11;
+        int color2 = (paletteRegister >> 4)  & 0b11;
+        int color3 = (paletteRegister >> 6)  & 0b11;
+        palette[0] = baseColoursGB[color0];
+        palette[1] = baseColoursGB[color1];
+        palette[2] = baseColoursGB[color2];
+        palette[3] = baseColoursGB[color3];
+        return palette;
+    }
+
+    public void drawData() {
+        screen.drawData(pixels);
+    }
+
+    public void addClockTime(int cycles) {
+        this.clock = this.clock + cycles;
+    }
+
+    public void setVRAM(int address, int source) {
+        vram[address] = source;
+    }
+
+    public void resetVRAM() {
+        vram = new int[65536];
+    }
     public void resetTiles() {
         tileset = new int[TILE_COUNT][TILE_PIXEL_SIZE][TILE_PIXEL_SIZE];
     }

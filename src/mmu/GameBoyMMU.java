@@ -90,7 +90,12 @@ public class GameBoyMMU {
 	}
 	public void setMemoryAtAddress(int address, int source) {
 		if(addressWatchlist.contains(address)) {
-			System.out.println("0x"+Util.byteToHex16(address) + " -> 0x" + Util.byteToHex(source));
+			if(address == 0xff40) {
+				if ((0b00010000 & source) == 0b10000) {
+					System.out.println(Util.byteToHex16(Util.getCPU().getProgramCounter()));
+				}
+			}
+//			System.out.println("0x"+Util.byteToHex16(address) + " -> 0x" + Util.byteToHex(source) + " / 0b" + Util.toBinaryString(source)  + " at programCounter " + Util.byteToHex16(Util.getCPU().getProgramCounter()));
 		}
 
 		switch(address & 0xF000) {

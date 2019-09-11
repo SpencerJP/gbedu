@@ -47,7 +47,7 @@ public class Interrupts {
 	}
 
 	public static boolean hasSerialInterruptOccurred() {
-		return Util.getBit(SERIAL_BITPOS ,Util.getMemory().getMemoryAtAddress(INTERRUPT_FLAGS));
+		return Util.getBit(SERIAL_BITPOS,Util.getMemory().getMemoryAtAddress(INTERRUPT_FLAGS));
 	}
 	
 

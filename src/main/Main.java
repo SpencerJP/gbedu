@@ -16,7 +16,7 @@ public class Main {
 		try {
 			memory.initialize("test_tetris.gb", true);
 //			memory.initialize("drmarioworld.gb", true);
-//			memory.initialize("opus5.gb", true);
+//			memory.initialize("opus5.gb", false);
 
 			//System.out.println(memory.getMemoryAtAddress(0x104));
 		} catch (IOException e) {

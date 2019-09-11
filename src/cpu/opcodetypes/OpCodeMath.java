@@ -99,7 +99,6 @@ public class OpCodeMath extends OpCode {
 			case SBC:
 				carry = (getFlagC() ? 1 : 0);
 				result = getAccumulator() - source - carry;
-
 				setFlagZ((result & 0xff) == 0);
 				setFlagN(true);
 				setFlagH(((getAccumulator()  ^ source ^ (result & 0xff)) & (1 << 4)) != 0);
