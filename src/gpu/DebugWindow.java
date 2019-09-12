@@ -64,16 +64,16 @@ public class DebugWindow extends JPanel {
     	}
         
 
+    }
+
+    public void drawDataInSwingThread(Color[] pixels, int scrollX, int scrollY) {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
+                drawData(pixels, scrollX, scrollY);
                 repaint();
             }
         });
-    }
-    
-    public void addScrollLines(int scrollX, int scrollY) {
-
     }
 }
 

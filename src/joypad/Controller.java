@@ -8,9 +8,12 @@ import main.Util;
 import mmu.Interrupts;
 
 public class Controller implements KeyListener {
+	public int joypadRegister = 0;
+	private static Controller singletonController;
+
 	public HashMap<Integer, Key> keyBindings = new HashMap<Integer, Key>();
 	
-	public Controller() {
+	private Controller() {
 		try {
 			keyBindings.put(KeyEvent.VK_Z, new Key("a"));
 			keyBindings.put(KeyEvent.VK_X, new Key("b"));
@@ -24,6 +27,13 @@ public class Controller implements KeyListener {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+
+	public static Controller getInstance() {
+		if(singletonController == null) {
+			singletonController = new Controller();
+		}
+		return singletonController;
 	}
 	@Override
 	public void keyTyped(KeyEvent e) {
@@ -46,6 +56,7 @@ public class Controller implements KeyListener {
 	public void keyReleased(KeyEvent e) {
 		try {
 			keyBindings.get(e.getKeyCode()).isPressed = false;
+			calculateAndSetKPRegister();
 			Interrupts.setJoypadInterrupt();			
 		}
 		catch(NullPointerException ex) {
@@ -61,6 +72,6 @@ public class Controller implements KeyListener {
 				registerValue += k.value;
 			}
 		}
-		Util.getMemory().setMemoryAtAddress(0xFF00, registerValue);
+		joypadRegister = registerValue;
 	}
 }

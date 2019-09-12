@@ -3,6 +3,7 @@ package gpu;
 import main.Util;
 
 public class GpuRegisters {
+
     public static final int LCDC = 0xff40;
     public static final int STAT = 0xff41;
     public static final int SCROLL_Y = 0xFF42;
@@ -27,7 +28,7 @@ public class GpuRegisters {
     }
 
     public static void setStatMode(int mode) {
-        mode = ((Util.getMemory().getMemoryAtAddress(STAT) >> 2) << 2) | mode;
+        mode = ((Util.getMemory().getMemoryAtAddress(STAT) >>> 2) << 2) | mode;
         Util.getMemory().setMemoryAtAddress(STAT, mode);
     }
 

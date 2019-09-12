@@ -9,7 +9,7 @@ import java.util.logging.Level;
 
 public class Main {
 	public static void main(String[] args) {
-		Util.isDebugMode = true;
+		Util.isDebugMode = false;
 		boolean disableBootrom = false;
 		GameBoyMMU memory = GameBoyMMU.getInstance();
 		@SuppressWarnings("unused")

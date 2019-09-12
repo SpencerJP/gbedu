@@ -2,6 +2,7 @@ package main;
 
 import cpu.GameBoyCPU;
 import gpu.GameBoyGPU;
+import joypad.Controller;
 import mmu.GameBoyMMU;
 
 import java.util.logging.Level;
@@ -135,6 +136,9 @@ public class Util {
 
 	public static GameBoyGPU getGPU() {
 		return GameBoyGPU.getInstance();
+	}
+	public static Controller getJoypad() {
+		return Controller.getInstance();
 	}
 }
 

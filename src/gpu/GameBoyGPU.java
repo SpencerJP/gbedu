@@ -69,7 +69,7 @@ public class GameBoyGPU implements Runnable {
         frame.setLocation((int) ((bounds.width / 2) - (size.getWidth() / 2)),
                 (int) ((bounds.height / 2) - (size.getHeight() / 2)));
         frame.setVisible(true);
-        frame.addKeyListener(new Controller());
+        frame.addKeyListener(Controller.getInstance());
 
         GpuRegisters.setStatMode(SCANLINE_OAM);
 
@@ -77,7 +77,6 @@ public class GameBoyGPU implements Runnable {
             debugFrame= new JFrame("Debug");
             debugWindow=new DebugWindow(DEBUG_BACKGROUND_DIMENSION, DEBUG_BACKGROUND_DIMENSION*2);
             debugWindow.setBounds(0,0,DEBUG_BACKGROUND_DIMENSION,DEBUG_BACKGROUND_DIMENSION*2);
-            debugWindow.addScrollLines(0,0);
             debugFrame.add(debugWindow);
             debugFrame.setSize(DEBUG_BACKGROUND_DIMENSION+16,DEBUG_BACKGROUND_DIMENSION*2 + 38);
             debugFrame.setLayout(null);
@@ -141,7 +140,7 @@ public class GameBoyGPU implements Runnable {
         }
         int scrollX = GpuRegisters.getScrollX();
         int scrollY = GpuRegisters.getScrollY();
-        debugWindow.drawData(backgroundPixels, scrollX, scrollY);
+        debugWindow.drawDataInSwingThread(backgroundPixels, scrollX, scrollY);
 
 
     }
@@ -219,7 +218,6 @@ public class GameBoyGPU implements Runnable {
 
         int bgTilemap = GpuRegisters.getBackgroundTilemap();
         int bgTileset = GpuRegisters.getBackgroundTileset();
-        bgTileset = 0;
         int line = GpuRegisters.getCurrentScanline();
         if (line == 3) {
         	int v = 0;
@@ -274,6 +272,7 @@ public class GameBoyGPU implements Runnable {
 
 
     public void updateTile(int address) {
+        if (address >= 0x9800) { return; }
         if((address & 1) == 1) {
             address--;
         }
