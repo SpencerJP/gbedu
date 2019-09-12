@@ -24,27 +24,46 @@ public class DebugWindow extends JPanel {
         g2.drawImage(canvas, null, null);
     }
 
-    public void drawData(Color[] pixels) {
+    public void drawData(Color[] pixels, int scrollX, int scrollY) {
         int x = 0;
         int y = 0;
         if (pixels[0] == null) {
             return;
         }
-        int i = 0;
         for(Color c : pixels) {
             if(x == GameBoyGPU.DEBUG_BACKGROUND_DIMENSION) {
                 x = 0;
                 y++;
             }
-            try {
-                canvas.setRGB(x, y, c.getRGB());
-            }
-            catch(Exception e) {
-                //System.out.println("pixel " + i);
-            }
+            canvas.setRGB(x, y, c.getRGB());
             x++;
-            i++;
         }
+        
+    	for(int i = scrollX; i < scrollX + GameBoyGPU.WIDTH_PIXELS; i++) {
+    		
+    		canvas.setRGB(i, scrollY, 0xFFFFFF);
+    		canvas.setRGB(i, scrollY + GameBoyGPU.HEIGHT_PIXELS, 0xFFFFFF);
+    		
+
+    		try {
+        		canvas.setRGB(i, scrollY - 1, 0xFFFFFF);
+    		}catch(Exception e) {}
+    		try {
+    			canvas.setRGB(i, scrollY + GameBoyGPU.HEIGHT_PIXELS + 1, 0xFFFFFF);
+    		}catch(Exception e) {}
+    	}
+    	for(int i = scrollY; i < scrollY + GameBoyGPU.HEIGHT_PIXELS; i++) {
+    		canvas.setRGB(scrollX, i, 0xFFFFFF);
+    		canvas.setRGB(scrollX+GameBoyGPU.WIDTH_PIXELS, i, 0xFFFFFF);
+    		try {
+    			canvas.setRGB(scrollX - 1, i, 0xFFFFFF);
+    		}catch(Exception e) {}
+    		try {
+        		canvas.setRGB(scrollX + GameBoyGPU.WIDTH_PIXELS + 1, i, 0xFFFFFF);
+    		}catch(Exception e) {}
+    	}
+        
+
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
@@ -52,4 +71,10 @@ public class DebugWindow extends JPanel {
             }
         });
     }
+    
+    public void addScrollLines(int scrollX, int scrollY) {
+
+    }
 }
+
+

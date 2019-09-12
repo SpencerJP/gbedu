@@ -20,7 +20,7 @@ public class GameBoyGPU implements Runnable {
     private static final int HBLANK_TIME = 204;
     private static final int VBLANK_TIME = 456;
     static final int WIDTH_PIXELS = 160;
-    private static final int HEIGHT_PIXELS = 144;
+    static final int HEIGHT_PIXELS = 144;
     private static final int TILE_COUNT = 384;
     private static final int TILE_PIXEL_SIZE = 8;
 
@@ -77,6 +77,7 @@ public class GameBoyGPU implements Runnable {
             debugFrame= new JFrame("Debug");
             debugWindow=new DebugWindow(DEBUG_BACKGROUND_DIMENSION, DEBUG_BACKGROUND_DIMENSION*2);
             debugWindow.setBounds(0,0,DEBUG_BACKGROUND_DIMENSION,DEBUG_BACKGROUND_DIMENSION*2);
+            debugWindow.addScrollLines(0,0);
             debugFrame.add(debugWindow);
             debugFrame.setSize(DEBUG_BACKGROUND_DIMENSION+16,DEBUG_BACKGROUND_DIMENSION*2 + 38);
             debugFrame.setLayout(null);
@@ -114,12 +115,14 @@ public class GameBoyGPU implements Runnable {
 
         int x = 0;
         int currentPixel = 0;
-        for(int i = 0x9800; i < 0x9fff; i = i + 32){
+        for(int i = 0x9800; i < 0xA000;){
+        	
             int tileNum = vram[i];
             int y = lineNum & 7;
+            x = 0;
+            int lineOffset = 0;
             for(int j = 0; j < DEBUG_BACKGROUND_DIMENSION; j++)
             {
-                int lineOffset = 0;
                 backgroundPixels[currentPixel] = palette[tileset[tileNum][y][x]];
                 currentPixel++;
 
@@ -129,15 +132,16 @@ public class GameBoyGPU implements Runnable {
                     x = 0;
                     lineOffset = lineOffset + 1;
                     tileNum = vram[i + lineOffset];
-//                    if (bgTileset == 1 && tileNum < 128) {
-//                        tileNum += 256;
-//                    }
                 }
             }
             lineNum++;
+            if(y == 7) {
+            	i = i + 32;
+            }
         }
-        debugWindow.drawData(backgroundPixels);
-
+        int scrollX = GpuRegisters.getScrollX();
+        int scrollY = GpuRegisters.getScrollY();
+        debugWindow.drawData(backgroundPixels, scrollX, scrollY);
 
 
     }
@@ -150,9 +154,7 @@ public class GameBoyGPU implements Runnable {
     public void disableLCD() {
         this.LCDEnabled = false;
     }
-
-
-
+    
     public static final int HBLANK = 0;
     public static final int VBLANK = 1;
     public static final int SCANLINE_OAM = 2;
@@ -181,7 +183,7 @@ public class GameBoyGPU implements Runnable {
                     GpuRegisters.incrementScanLine();
                     if(GpuRegisters.getCurrentScanline() == HEIGHT_PIXELS - 1)
                     {
-                    	renderSprites();
+                    	//renderSprites();
                         drawData();
                         GpuRegisters.setStatMode(VBLANK);
                     }
@@ -219,12 +221,15 @@ public class GameBoyGPU implements Runnable {
         int bgTileset = GpuRegisters.getBackgroundTileset();
         bgTileset = 0;
         int line = GpuRegisters.getCurrentScanline();
+        if (line == 3) {
+        	int v = 0;
+        }
         int scrollX = GpuRegisters.getScrollX();
         int scrollY = GpuRegisters.getScrollY();
         Color[] palette = createPalette();
         int mapOffset = bgTilemap == 1 ? 0x9C00 : 0x9800;
 
-        mapOffset = mapOffset + (((line + scrollY & 0xFF) >> 3) * 32);
+        mapOffset = mapOffset + (((line + scrollY & 0xFF) >> 3) << 5);
         int lineOffset = (scrollX >> 3);
 
         int y = (line + scrollY) & 7;
@@ -236,9 +241,9 @@ public class GameBoyGPU implements Runnable {
         Color color;
         
         int tile = vram[mapOffset + lineOffset];
-        if(bgTileset == 1 && tile < 128) {
-            tile += 256;
-        }
+//        if(bgTileset == 1 && tile < 128) {
+//            tile += 256;
+//        }
         for(int i = 0; i < WIDTH_PIXELS; i++)
         {
             color = palette[tileset[tile][y][x]];
@@ -249,7 +254,7 @@ public class GameBoyGPU implements Runnable {
             if(x == 8)
             {
                 x = 0;
-                lineOffset = (lineOffset + 1) & 0x1f;
+                lineOffset = (lineOffset + 1) & 31;
                 tile = vram[mapOffset + lineOffset];
                 if (bgTileset == 1 && tile < 128) {
                     tile += 256;

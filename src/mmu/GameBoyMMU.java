@@ -89,6 +89,10 @@ public class GameBoyMMU {
 		addressWatchlist.add(address);
 	}
 	public void setMemoryAtAddress(int address, int source) {
+		if((address & 0xff00) == 0xff00) {
+			hRAMHandler(address, source);
+			return;
+		}
 		if(addressWatchlist.contains(address)) {
 			if(address == 0xff40) {
 				if ((0b00010000 & source) == 0b10000) {
@@ -110,19 +114,30 @@ public class GameBoyMMU {
 				break;
 			case 0xF000:
                 memory[address] = source;
-				if((address == IORegisters.BOOTROM_STATUS) && source == 0x01) {
-					disableBootrom = true;
-					GameBoyCPU.getInstance().resetDebugPositions();
-					GameBoyGPU.getInstance().resetVRAM();
-				}
-				if(address == 0xff40) {
-					GpuRegisters.setLCDC(source);
-				}
 				break;
 			default:
 				memory[address] = source;
 				break;
 
+		}
+	}
+
+	private void hRAMHandler(int address, int source) {
+        memory[address] = source;
+		if((address == IORegisters.BOOTROM_STATUS) && source == 0x01) {
+			disableBootrom = true;
+			GameBoyCPU.getInstance().resetDebugPositions();
+			GameBoyGPU.getInstance().resetVRAM();
+		}
+		if(address == GpuRegisters.LCDC) {
+			GpuRegisters.setLCDC(source);
+		}
+		if(Util.isDebugMode && address == GpuRegisters.SCROLL_Y) {
+			GameBoyGPU.getInstance().debugUpdateBackgroundWindow();
+		}
+
+		if(Util.isDebugMode && address == GpuRegisters.SCROLL_X) {
+			GameBoyGPU.getInstance().debugUpdateBackgroundWindow();
 		}
 	}
 	

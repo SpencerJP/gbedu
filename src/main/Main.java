@@ -10,14 +10,16 @@ import java.util.logging.Level;
 public class Main {
 	public static void main(String[] args) {
 		Util.isDebugMode = true;
+		boolean disableBootrom = false;
 		GameBoyMMU memory = GameBoyMMU.getInstance();
+		@SuppressWarnings("unused")
 		GameBoyGPU gpu = GameBoyGPU.getInstance();
         GameBoyCPU cpu = GameBoyCPU.getInstance();
 		long start = System.currentTimeMillis();
 		try {
-			memory.initialize("test_tetris.gb", true);
-//			memory.initialize("drmarioworld.gb", true);
-//			memory.initialize("opus5.gb", false);
+			memory.initialize("test_tetris.gb", disableBootrom);
+//			memory.initialize("drmarioworld.gb", disableBootrom);
+//			memory.initialize("opus5.gb", disableBootrom);
 
 			//System.out.println(memory.getMemoryAtAddress(0x104));
 		} catch (IOException e) {
