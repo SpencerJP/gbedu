@@ -71,8 +71,6 @@ public class GameBoyGPU implements Runnable {
         frame.setVisible(true);
         frame.addKeyListener(Controller.getInstance());
 
-        GpuRegisters.setStatMode(SCANLINE_OAM);
-
         if(Util.isDebugMode) {
             debugFrame= new JFrame("Debug");
             debugWindow=new DebugWindow(DEBUG_BACKGROUND_DIMENSION, DEBUG_BACKGROUND_DIMENSION*2);
@@ -108,42 +106,6 @@ public class GameBoyGPU implements Runnable {
         return singletonInstance;
     }
 
-    public void debugUpdateBackgroundWindow() {
-        Color[] palette = createPalette();
-        int lineNum = 0;
-
-        int x = 0;
-        int currentPixel = 0;
-        for(int i = 0x9800; i < 0xA000;){
-        	
-            int tileNum = vram[i];
-            int y = lineNum & 7;
-            x = 0;
-            int lineOffset = 0;
-            for(int j = 0; j < DEBUG_BACKGROUND_DIMENSION; j++)
-            {
-                backgroundPixels[currentPixel] = palette[tileset[tileNum][y][x]];
-                currentPixel++;
-
-                x++;
-                if(x == 8)
-                {
-                    x = 0;
-                    lineOffset = lineOffset + 1;
-                    tileNum = vram[i + lineOffset];
-                }
-            }
-            lineNum++;
-            if(y == 7) {
-            	i = i + 32;
-            }
-        }
-        int scrollX = GpuRegisters.getScrollX();
-        int scrollY = GpuRegisters.getScrollY();
-        debugWindow.drawDataInSwingThread(backgroundPixels, scrollX, scrollY);
-
-
-    }
 
 
     public void enableLCD() {
@@ -184,6 +146,7 @@ public class GameBoyGPU implements Runnable {
                     {
                     	//renderSprites();
                         drawData();
+                        Interrupts.setVblankInterrupt();
                         GpuRegisters.setStatMode(VBLANK);
                     }
                     else
@@ -195,7 +158,6 @@ public class GameBoyGPU implements Runnable {
             case VBLANK:
                 if(clock >= VBLANK_TIME) {
                     clock = 0;
-                    Interrupts.setVblankInterrupt();
                     GpuRegisters.incrementScanLine();
                     if(GpuRegisters.getCurrentScanline() > 153)
                     {
@@ -212,22 +174,19 @@ public class GameBoyGPU implements Runnable {
 
 
 	private void renderScan() {
-    	if (!LCDEnabled) {
+    	if (!GpuRegisters.getDisplayOn()) {
     		return;
     	}
 
         int bgTilemap = GpuRegisters.getBackgroundTilemap();
-        int bgTileset = GpuRegisters.getBackgroundTileset();
+        int tileset = GpuRegisters.getSelectedTileset();
         int line = GpuRegisters.getCurrentScanline();
-        if (line == 3) {
-        	int v = 0;
-        }
         int scrollX = GpuRegisters.getScrollX();
         int scrollY = GpuRegisters.getScrollY();
         Color[] palette = createPalette();
         int mapOffset = bgTilemap == 1 ? 0x9C00 : 0x9800;
 
-        mapOffset = mapOffset + (((line + scrollY & 0xFF) >> 3) << 5);
+        mapOffset = mapOffset + (((line + scrollY & 0xFF) >> 3) * 32);
         int lineOffset = (scrollX >> 3);
 
         int y = (line + scrollY) & 7;
@@ -239,12 +198,12 @@ public class GameBoyGPU implements Runnable {
         Color color;
         
         int tile = vram[mapOffset + lineOffset];
-//        if(bgTileset == 1 && tile < 128) {
-//            tile += 256;
-//        }
+        if(tileset == 1 && tile < 128) {
+            tile += 256;
+        }
         for(int i = 0; i < WIDTH_PIXELS; i++)
         {
-            color = palette[tileset[tile][y][x]];
+            color = palette[this.tileset[tile][y][x]];
             pixels[canvasOffSet] = color;
             canvasOffSet++;
 
@@ -254,7 +213,7 @@ public class GameBoyGPU implements Runnable {
                 x = 0;
                 lineOffset = (lineOffset + 1) & 31;
                 tile = vram[mapOffset + lineOffset];
-                if (bgTileset == 1 && tile < 128) {
+                if (tileset == 1 && tile < 128) {
                     tile += 256;
                 }
             }
@@ -307,7 +266,7 @@ public class GameBoyGPU implements Runnable {
     	        	oam[obj].pos.x = value - 0x8;
     	        	break;
     	        case 2:
-    	          if(GpuRegisters.getLCDCSpriteSize() == 8*16) {
+    	          if(GpuRegisters.getSpriteSize() == 8*16) {
     	        	  oam[obj].tileNum = (value&0xFE);
     	          }
     	          else {
@@ -327,14 +286,10 @@ public class GameBoyGPU implements Runnable {
     private Color[] createPalette() {
         Color[] palette = new Color[4];
         int paletteRegister = GpuRegisters.getBGPalette();
-        int color0 = paletteRegister & 0b11;
-        int color1 = (paletteRegister >> 2) & 0b11;
-        int color2 = (paletteRegister >> 4)  & 0b11;
-        int color3 = (paletteRegister >> 6)  & 0b11;
-        palette[0] = baseColoursGB[color0];
-        palette[1] = baseColoursGB[color1];
-        palette[2] = baseColoursGB[color2];
-        palette[3] = baseColoursGB[color3];
+        palette[0] = baseColoursGB[paletteRegister & 0b11];
+        palette[1] = baseColoursGB[(paletteRegister >> 2) & 0b11];
+        palette[2] = baseColoursGB[(paletteRegister >> 4)  & 0b11];
+        palette[3] = baseColoursGB[(paletteRegister >> 6)  & 0b11];
         return palette;
     }
 
@@ -492,6 +447,45 @@ public class GameBoyGPU implements Runnable {
             output = output + "\n";
         }
         System.out.println(output);
+    }
+
+
+    public void debugUpdateBackgroundWindow() {
+        if(!Util.isDebugMode) {
+            return;
+        }
+        Color[] palette = createPalette();
+        int lineNum = 0;
+
+        int x = 0;
+        int currentPixel = 0;
+        for(int i = 0x9800; i < 0xA000;){
+
+            int tileNum = vram[i];
+            int y = lineNum & 7;
+            x = 0;
+            int lineOffset = 0;
+            for(int j = 0; j < DEBUG_BACKGROUND_DIMENSION; j++)
+            {
+                backgroundPixels[currentPixel] = palette[tileset[tileNum][y][x]];
+                currentPixel++;
+
+                x++;
+                if(x == 8)
+                {
+                    x = 0;
+                    lineOffset = lineOffset + 1;
+                    tileNum = vram[i + lineOffset];
+                }
+            }
+            lineNum++;
+            if(y == 7) {
+                i = i + 32;
+            }
+        }
+        int scrollX = GpuRegisters.getScrollX();
+        int scrollY = GpuRegisters.getScrollY();
+        debugWindow.drawDataInSwingThread(backgroundPixels, scrollX, scrollY);
     }
    
 }

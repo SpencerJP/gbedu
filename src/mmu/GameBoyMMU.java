@@ -2,6 +2,7 @@ package mmu;
 
 
 import bootrom.BootRom;
+import cpu.Clock;
 import gpu.GameBoyGPU;
 import main.Util;
 import gpu.GpuRegisters;
@@ -65,25 +66,29 @@ public class GameBoyMMU {
 	}
 	
 	public int getMemoryAtAddress(int address) throws ArrayIndexOutOfBoundsException {
-		if (disableBootrom) {
-			if((address & 0xff00) == 0xff00) {
-				return getHRAM(address);
-			}
-			return addressSpace[address] & 0xFF;
-		}
-		else if(address < BootRom.data.length) {
+		if(address < 0x100) {
+            if(disableBootrom) {
+                return addressSpace[address] & 0xFF;
+            }
 			return BootRom.data[address] & 0xFF;
 		}
+        if(address >= 0xff00 && address < 0xff80) {
+            return getIORegisters(address);
+        }
 		return addressSpace[address] & 0xFF;
 	}
 
-	private int getHRAM(int address) {
-		switch(address) {
-			case 0xff00:
-				return Util.getJoypad().joypadRegister;
-			default:
-				return addressSpace[address] & 0xFF;
-		}
+	private int getIORegisters(int address) {
+	    if(address >= 0xff04 && address <= 0xff07){
+            return Clock.getTimerAddress(address);
+        }
+        if((address >= 0xff40 && address <= 0xff47) || address == 0xff4a || address == 0xff4b){
+            return GpuRegisters.getMemory(address);
+        }
+	    if(address == 0xff00) {
+            return Util.getJoypad().joypadRegister;
+        }
+	    return addressSpace[address] & 0xFF;
 	}
 
 	public int[] getAddressSpace() {
@@ -102,7 +107,7 @@ public class GameBoyMMU {
 	}
 	public void setMemoryAtAddress(int address, int source) {
 		if((address & 0xff00) == 0xff00) {
-			hRAMHandler(address, source);
+            setSpecialRAM(address, source);
 			return;
 		}
 		if(addressWatchlist.contains(address)) {
@@ -112,8 +117,8 @@ public class GameBoyMMU {
 		switch(address & 0xF000) {
 			case 0x8000:
 			case 0x9000:
-				Util.getGPU().setVRAM(address, source);
-				Util.getGPU().updateTile(address);
+			    Util.getGPU().setVRAM(address, source);
+			    Util.getGPU().updateTile(address);
 				addressSpace[address] = source;
 				if(Util.isDebugMode && address >= 0x9800 && address <= 0x9fff) {
 					GameBoyGPU.getInstance().debugUpdateBackgroundWindow();
@@ -128,23 +133,21 @@ public class GameBoyMMU {
 		}
 	}
 
-	private void hRAMHandler(int address, int source) {
+	private void setSpecialRAM(int address, int source) {
         addressSpace[address] = source;
 		if((address == IORegisters.BOOTROM_STATUS) && source == 0x01) {
 			disableBootrom = true;
 			GameBoyCPU.getInstance().resetDebugPositions();
 			GameBoyGPU.getInstance().resetVRAM();
 		}
-		if(address == GpuRegisters.LCDC) {
-			GpuRegisters.setLCDC(source);
-		}
-		if(Util.isDebugMode && address == GpuRegisters.SCROLL_Y) {
-			GameBoyGPU.getInstance().debugUpdateBackgroundWindow();
-		}
-
-		if(Util.isDebugMode && address == GpuRegisters.SCROLL_X) {
-			GameBoyGPU.getInstance().debugUpdateBackgroundWindow();
-		}
+		if((address >= 0xff40 && address <= 0xff47) || address == 0xff4a || address == 0xff4b){
+		    GpuRegisters.setMemory(address, source);
+		    return;
+        }
+		if(address >= 0xff04 && address <= 0xff07) {
+            Clock.setTimerAddress(address, source);
+            return;
+        }
 	}
 	
 	

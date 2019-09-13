@@ -42,8 +42,9 @@ public class GameBoyCPU {
 	
 	
 	private static GameBoyCPU singletonInstance;
-	
-	private GameBoyCPU() {
+    private int clockTime;
+
+    private GameBoyCPU() {
 		this.mmu = GameBoyMMU.getInstance();
 		this.opFact = OpCodeFactory.getInstance();
 	}
@@ -58,30 +59,26 @@ public class GameBoyCPU {
 	
 	
 	public void run() throws Exception {
-		int totalCycles = 0;
 		int cycles = 0;
 		GameBoyGPU gpu = GameBoyGPU.getInstance();
 
-		GameBoyMMU.addAddressToWatchlist(0xff40);
+		//GameBoyMMU.addAddressToWatchlist(0xff40);
 		
 		while(true) {
 			cycles = runOperation();
-			totalCycles += cycles;
-			gpu.addClockTime(cycles);
-			gpu.run();
-			
+			Clock.addClockTime(cycles);
 			if (interruptsEnabled) {
 				checkInterrupts();
 			}
 			
-			if (totalCycles >= 4194*2) {
-				totalCycles = 0;
-				Thread.sleep(1);
+			if (clockTime >= 4194*2) {
+                clockTime = 0;
+                Thread.sleep(1);
 			}
 
-			if (programCounter == 0x0384) {
-					int i = 0;
-			}
+//			if (programCounter == 0x0384) {
+//					int i = 0;
+//			}
 		}
 	}
 	
@@ -440,5 +437,8 @@ public class GameBoyCPU {
 		}
 		
 	}
-	
+
+    public void addClockTime(int clockTime) {
+        this.clockTime += clockTime;
+    }
 }
