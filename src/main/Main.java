@@ -18,6 +18,8 @@ public class Main {
 		long start = System.currentTimeMillis();
 		try {
 			memory.initialize("test_tetris.gb", disableBootrom);
+//			memory.initialize("cpu_instrs.gb", disableBootrom); // FREEZES
+//			memory.initialize("01-special.gb", true);
 //			memory.initialize("drmarioworld.gb", disableBootrom);
 //			memory.initialize("opus5.gb", disableBootrom);
 

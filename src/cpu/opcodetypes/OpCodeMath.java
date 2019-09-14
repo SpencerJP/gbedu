@@ -65,7 +65,7 @@ public class OpCodeMath extends OpCode {
 				break;
 			case ADD:
 				result = source + source2;
-				setRegister(cpu, register, result);
+				setAccumulator(cpu, result);
 				setFlagZ((result & 0xff) == 0x00);
 				setFlagN(false);
 				setFlagH((((source & 0xf) + (source2 & 0xf)) & 0x10) == 0x10);
@@ -86,7 +86,7 @@ public class OpCodeMath extends OpCode {
 				setFlagN(false);
 				setFlagH(hFlag);
 				setFlagC(cFlag);
-				setRegister(cpu, register, result);
+				setAccumulator(cpu, result);
 				break;
 			case SUB:
 				accum = getAccumulator();

@@ -9,6 +9,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.Arrays;
 
 import joypad.Controller;
 
@@ -95,6 +96,10 @@ public class GameBoyGPU implements Runnable {
         for(Color c : pixels) {
         	c = baseColoursGB[0];
         }
+    }
+
+    public void restart() {
+        singletonInstance = null;
     }
 
 
@@ -198,7 +203,7 @@ public class GameBoyGPU implements Runnable {
         Color color;
         
         int tile = vram[mapOffset + lineOffset];
-        if(tileset == 1 && tile < 128) {
+        if(tileset == 0 && tile < 128) {
             tile += 256;
         }
         for(int i = 0; i < WIDTH_PIXELS; i++)
@@ -213,7 +218,7 @@ public class GameBoyGPU implements Runnable {
                 x = 0;
                 lineOffset = (lineOffset + 1) & 31;
                 tile = vram[mapOffset + lineOffset];
-                if (tileset == 1 && tile < 128) {
+                if (tileset == 0 && tile < 128) {
                     tile += 256;
                 }
             }
@@ -450,10 +455,19 @@ public class GameBoyGPU implements Runnable {
     }
 
 
-    public void debugUpdateBackgroundWindow() {
+
+    public void drawDebugDataInSwingThread() {
         if(!Util.isDebugMode) {
             return;
         }
+        SwingUtilities.invokeLater(() -> {
+            debugUpdateBackgroundWindow();
+            int scrollX = GpuRegisters.getScrollX();
+            int scrollY = GpuRegisters.getScrollY();
+            debugWindow.drawData(backgroundPixels, scrollX, scrollY);
+        });
+    }
+    public void debugUpdateBackgroundWindow() {
         Color[] palette = createPalette();
         int lineNum = 0;
 
@@ -483,9 +497,9 @@ public class GameBoyGPU implements Runnable {
                 i = i + 32;
             }
         }
-        int scrollX = GpuRegisters.getScrollX();
-        int scrollY = GpuRegisters.getScrollY();
-        debugWindow.drawDataInSwingThread(backgroundPixels, scrollX, scrollY);
     }
-   
+
+    public int hashPixelArray() {
+        return Arrays.hashCode(pixels);
+    }
 }

@@ -28,6 +28,10 @@ public class GameBoyMMU {
 		ior = new IORegisters(this);
 
 	}
+
+	public void restart() {
+		singletonInstance = null;
+	}
 	
 	public void initialize(String filename, boolean disableBootrom) throws IOException {
 	    this.disableBootrom = disableBootrom;
@@ -35,7 +39,7 @@ public class GameBoyMMU {
 	        Util.getCPU().setProgramCounter(0x100);
 	        Util.getGPU().enableLCD();
         }
-		file = new File(filename);
+		file = new File("roms/"+ filename);
 
 		FileInputStream fStream = new FileInputStream(file);
 		
@@ -86,8 +90,9 @@ public class GameBoyMMU {
             return GpuRegisters.getMemory(address);
         }
 	    if(address == 0xff00) {
-            return Util.getJoypad().joypadRegister;
+			return Util.getJoypad().joypadRegister;
         }
+
 	    return addressSpace[address] & 0xFF;
 	}
 
@@ -121,7 +126,7 @@ public class GameBoyMMU {
 			    Util.getGPU().updateTile(address);
 				addressSpace[address] = source;
 				if(Util.isDebugMode && address >= 0x9800 && address <= 0x9fff) {
-					GameBoyGPU.getInstance().debugUpdateBackgroundWindow();
+					GameBoyGPU.getInstance().drawDebugDataInSwingThread();
 				}
 				break;
 			case 0xF000:

@@ -48,6 +48,9 @@ public class GameBoyCPU {
 		this.mmu = GameBoyMMU.getInstance();
 		this.opFact = OpCodeFactory.getInstance();
 	}
+	public void restart() {
+		singletonInstance = null;
+	}
 	
 	public static GameBoyCPU getInstance() {
 		if (singletonInstance == null) {
@@ -63,7 +66,7 @@ public class GameBoyCPU {
 		GameBoyGPU gpu = GameBoyGPU.getInstance();
 
 		//GameBoyMMU.addAddressToWatchlist(0xff40);
-		
+		long frametimeStart = System.nanoTime();
 		while(true) {
 			cycles = runOperation();
 			Clock.addClockTime(cycles);
@@ -71,14 +74,21 @@ public class GameBoyCPU {
 				checkInterrupts();
 			}
 			
-			if (clockTime >= 4194*2) {
+			if (clockTime >= 70224) {
                 clockTime = 0;
-                Thread.sleep(1);
+                busyWait(frametimeStart);
+				frametimeStart = System.nanoTime();
 			}
 
 //			if (programCounter == 0x0384) {
 //					int i = 0;
 //			}
+		}
+	}
+
+	private void busyWait(long frametimeStart) {
+		while(frametimeStart + 1.6e7 >= System.nanoTime()) {
+			//WAIT
 		}
 	}
 	
@@ -244,7 +254,7 @@ public class GameBoyCPU {
 	}
 
 	public void setProgramCounter(int newAddress) {
-		this.programCounter = newAddress;
+		this.programCounter = newAddress & 0xffff;
 	}
 
 	public int getH() {

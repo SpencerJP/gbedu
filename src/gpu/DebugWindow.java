@@ -62,19 +62,13 @@ public class DebugWindow extends JPanel {
         		canvas.setRGB(scrollX + GameBoyGPU.WIDTH_PIXELS + 1, i, 0xFFFFFF);
     		}catch(Exception e) {}
     	}
+
+    	repaint();
         
 
     }
 
-    public void drawDataInSwingThread(Color[] pixels, int scrollX, int scrollY) {
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                drawData(pixels, scrollX, scrollY);
-                repaint();
-            }
-        });
-    }
+
 }
 
 

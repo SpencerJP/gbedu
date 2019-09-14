@@ -77,11 +77,11 @@ public class GpuRegisters {
                 break;
             case SCROLL_X:
                 scrollX = value;
-                GameBoyGPU.getInstance().debugUpdateBackgroundWindow();
+                GameBoyGPU.getInstance().drawDebugDataInSwingThread();
                 break;
             case SCROLL_Y:
                 scrollY = value;
-                GameBoyGPU.getInstance().debugUpdateBackgroundWindow();
+                GameBoyGPU.getInstance().drawDebugDataInSwingThread();
                 break;
             case CURRENT_SCAN_LINE:
                 //I'm pretty sure this is read only.
