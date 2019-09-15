@@ -126,10 +126,10 @@ public class OpCodeMath extends OpCode {
 				setFlagH((source & 0x0f) == 0x0);
 				break;
 			case INC_16:
-				setRegister(cpu, register, (source + 1) & 0xffff);
+				setRegister(cpu, register, (getRegister(cpu, register) + 1) & 0xffff);
 				break;
 			case DEC_16:
-				setRegister(cpu, register, (source - 1) & 0xffff);
+				setRegister(cpu, register, (getRegister(cpu, register) - 1) & 0xffff);
 				break;
 			case CP:
 				accum = getAccumulator();

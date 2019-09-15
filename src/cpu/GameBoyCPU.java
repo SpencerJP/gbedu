@@ -41,8 +41,11 @@ public class GameBoyCPU {
 
 	private int programCounter = 0;
 
-	int popCount = 0;
+	int interruptPushCount = 0;
+	int returnPopCount = 0;
+	int callPushCount = 0;
 	int pushCount = 0;
+	int popCount = 0;
 
 
 	
@@ -72,7 +75,7 @@ public class GameBoyCPU {
 		GameBoyGPU gpu = GameBoyGPU.getInstance();
 
 		//GameBoyMMU.addAddressToWatchlist(0xff40);
-		addBreakPoints(  0x039d, 0x039f, 0x0000);
+		//addBreakPoints(  0x02ca);
 		long frametimeStart = System.nanoTime();
 		while(true) {
 			cycles = runOperation();
@@ -85,6 +88,9 @@ public class GameBoyCPU {
                 clockTime = 0;
                 busyWait(frametimeStart);
 				frametimeStart = System.nanoTime();
+			}
+			if(programCounter == 0x39f) {
+				sp = 0x3ffd;
 			}
 
 //			if (programCounter == 0x0384) {
@@ -195,7 +201,7 @@ public class GameBoyCPU {
 			setProgramCounter(0x50);
 			return;
 		}
-		
+
 		if(interrupts.isSerialInterruptEnabled() && interrupts.hasSerialInterruptOccurred()) {
 			interrupts.resetSerialInterrupt();
 			setInterruptsEnabled(false);
@@ -203,7 +209,7 @@ public class GameBoyCPU {
 			setProgramCounter(0x58);
 			return;
 		}
-		
+
 		if(interrupts.isJoypadInterruptEnabled() && interrupts.hasJoypadInterruptOccurred()) {
 			interrupts.resetJoypadInterrupt();
 			setInterruptsEnabled(false);
@@ -342,17 +348,17 @@ public class GameBoyCPU {
 	public void pushSP(int data) {
 		int leftByte = (byte)(data & 0xff);
 		int rightByte = (byte)((data >> 8) & 0xFF);
-		setSP(getSP() - 1);
+		sp--;
 		Util.getMemory().setMemoryAtAddress(getSP(), leftByte);
-		setSP(getSP() - 1);
+		sp--;
 		Util.getMemory().setMemoryAtAddress(getSP(), rightByte);
 	}
 
 	public int popSP() {
 		int leftByte = Util.getMemory().getMemoryAtAddress(getSP());
-		setSP(getSP() + 1);
+		sp++;
 		int rightByte = Util.getMemory().getMemoryAtAddress(getSP());
-		setSP(getSP() + 1);
+		sp++;
 		return (leftByte << 8 | rightByte);
 	}
 

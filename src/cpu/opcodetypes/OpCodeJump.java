@@ -55,8 +55,8 @@ public class OpCodeJump extends OpCode {
 				}
 				break;
 			case ADD_TO_ADDRESS:
-				byte jumpLength = (byte) getOperand8bit(cpu);
-				destAddress = Util.getCPU().getProgramCounter() + jumpLength; // this value is a signed byte
+				byte jumpLength = (byte) getOperand8bit(cpu); // this value is a signed byte
+				destAddress = Util.getCPU().getProgramCounter() + jumpLength;
 				break;
 			case RETURN:
 			case RETI:
