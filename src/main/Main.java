@@ -10,7 +10,7 @@ import java.util.logging.Level;
 public class Main {
 	public static void main(String[] args) {
 		Util.isDebugMode = false;
-		boolean disableBootrom = false;
+		boolean disableBootrom = true;
 		GameBoyMMU memory = GameBoyMMU.getInstance();
 		@SuppressWarnings("unused")
 		GameBoyGPU gpu = GameBoyGPU.getInstance();

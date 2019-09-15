@@ -26,17 +26,23 @@ public class GameBoyCPU {
 	private int h = 0x00;
 	private int l = 0x00;
 	private int f = 0x00; // flag register
-	private int s = 0x00;
-	private int p = 0x00;
+	private int sp = 0x0000;
 
 	public ArrayList<Integer> programPositionsOnce = new ArrayList<Integer>();
+	public ArrayList<Integer> breakPoints = new ArrayList<Integer>();
 	public boolean setOnce = false; // todo delete
 	private int bit8Operand = 0;
 	private int bit16Operand = 0;
 
 	private boolean interruptsEnabled = false;
 
+
+	private boolean delayedInterruptsEnabled = false;
+
 	private int programCounter = 0;
+
+	int popCount = 0;
+	int pushCount = 0;
 
 
 	
@@ -66,6 +72,7 @@ public class GameBoyCPU {
 		GameBoyGPU gpu = GameBoyGPU.getInstance();
 
 		//GameBoyMMU.addAddressToWatchlist(0xff40);
+		addBreakPoints(  0x039d, 0x039f, 0x0000);
 		long frametimeStart = System.nanoTime();
 		while(true) {
 			cycles = runOperation();
@@ -86,13 +93,13 @@ public class GameBoyCPU {
 		}
 	}
 
+
 	private void busyWait(long frametimeStart) {
 		while(frametimeStart + 1.6e7 >= System.nanoTime()) {
 			//WAIT
 		}
 	}
 	
-
 
 	private int runOperation() throws Exception {
 		int cycles = 0;
@@ -133,10 +140,20 @@ public class GameBoyCPU {
 					}
 				}
 			}
+			if(breakPoints.contains(programCounter)) {
+				System.out.println("before running code at " + Util.byteToHex16(programCounter));
+			}
 			setProgramCounter(getProgramCounter() + op.getInstructionSize());
 
 
 			cycles = op.runCode(this, mmu);
+			if(breakPoints.contains(programCounter - op.getInstructionSize())) {
+				System.out.println("after running code at " + Util.byteToHex16(programCounter - op.getInstructionSize()));
+			}
+			if(delayedInterruptsEnabled) {
+				delayedInterruptsEnabled = false;
+				interruptsEnabled = true;
+			}
 		}
 		catch(MissingOpCodeException e) {
 			Util.log(Level.SEVERE, e.getMessage());
@@ -150,43 +167,45 @@ public class GameBoyCPU {
 		return cycles;
 		
 	}
-	
+
 
 	private void checkInterrupts() {
-		if(Interrupts.isVblankInterruptEnabled() && Interrupts.hasVblankInterruptOccurred()) {
-			Interrupts.resetVblankInterrupt();
+    	Interrupts interrupts = Util.getInterrupts();
+
+		if(interrupts.isVblankInterruptEnabled() && interrupts.hasVblankInterruptOccurred()) {
+			interrupts.resetVblankInterrupt();
 			setInterruptsEnabled(false);
 			pushSP(programCounter);
 			setProgramCounter(0x40);
 			return;
 		}
 		
-		if(Interrupts.isLCDStatInterruptEnabled() && Interrupts.hasLCDStatInterruptOccurred()) {
-			Interrupts.resetLCDStatInterrupt();
+		if(interrupts.isLCDStatInterruptEnabled() && interrupts.hasLCDStatInterruptOccurred()) {
+			interrupts.resetLCDStatInterrupt();
 			setInterruptsEnabled(false);
 			pushSP(programCounter);
 			setProgramCounter(0x48);
 			return;
 		}
-		
-		if(Interrupts.isTimerInterruptEnabled() && Interrupts.hasTimerInterruptOccurred()) {
-			Interrupts.resetTimerInterrupt();
+//
+		if(interrupts.isTimerInterruptEnabled() && interrupts.hasTimerInterruptOccurred()) {
+			interrupts.resetTimerInterrupt();
 			setInterruptsEnabled(false);
 			pushSP(programCounter);
 			setProgramCounter(0x50);
 			return;
 		}
 		
-		if(Interrupts.isSerialInterruptEnabled() && Interrupts.hasSerialInterruptOccurred()) {
-			Interrupts.resetSerialInterrupt();
+		if(interrupts.isSerialInterruptEnabled() && interrupts.hasSerialInterruptOccurred()) {
+			interrupts.resetSerialInterrupt();
 			setInterruptsEnabled(false);
 			pushSP(programCounter);
 			setProgramCounter(0x58);
 			return;
 		}
 		
-		if(Interrupts.isJoypadInterruptEnabled() && Interrupts.hasJoypadInterruptOccurred()) {
-			Interrupts.resetJoypadInterrupt();
+		if(interrupts.isJoypadInterruptEnabled() && interrupts.hasJoypadInterruptOccurred()) {
+			interrupts.resetJoypadInterrupt();
 			setInterruptsEnabled(false);
 			pushSP(programCounter);
 			setProgramCounter(0x60);
@@ -241,14 +260,6 @@ public class GameBoyCPU {
 		this.f = f;
 	}
 
-	public void setS(int s) {
-		this.s = s;
-	}
-
-	public void setP(int p) {
-		this.p = p;
-	}
-
 	public int getProgramCounter() {
 		return programCounter;
 	}
@@ -279,8 +290,7 @@ public class GameBoyCPU {
 	}
 
 	public void setSP(int data) {
-		setP((data & 0xff));
-		setS((data >> 8) & 0xff);
+		sp = data & 0xffff;
 		
 	}
 
@@ -307,7 +317,7 @@ public class GameBoyCPU {
 	}
 	
 	public int getSP() {
-		return (s << 8 | p);
+		return sp;
 				
 	}
 	
@@ -436,6 +446,11 @@ public class GameBoyCPU {
 	public void setInterruptsEnabled(boolean interruptsEnabled) {
 		this.interruptsEnabled = interruptsEnabled;
 	}
+
+
+	public void setDelayedInterruptsEnabled(boolean delayedInterruptsEnabled) {
+		this.delayedInterruptsEnabled = delayedInterruptsEnabled;
+	}
 	
 	public void resetDebugPositions() {
 		Iterator<Integer> iter = programPositionsOnce.iterator();
@@ -451,4 +466,14 @@ public class GameBoyCPU {
     public void addClockTime(int clockTime) {
         this.clockTime += clockTime;
     }
+
+
+	private void addBreakPoints(int ...a) {
+		for (int i: a) {
+			breakPoints.add(i);
+		}
+	}
+
+
+
 }

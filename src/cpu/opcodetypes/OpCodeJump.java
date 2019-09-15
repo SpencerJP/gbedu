@@ -115,7 +115,7 @@ public class OpCodeJump extends OpCode {
 		}
 		
 		if (jumpType == JumpType.RETI) {
-			Util.getCPU().setInterruptsEnabled(true);
+			Util.getCPU().setDelayedInterruptsEnabled(true);
 			cpu.setProgramCounter(destAddress);
 			return 16;
 		}

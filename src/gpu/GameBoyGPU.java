@@ -151,7 +151,7 @@ public class GameBoyGPU implements Runnable {
                     {
                     	//renderSprites();
                         drawData();
-                        Interrupts.setVblankInterrupt();
+                        Util.getInterrupts().setVblankInterrupt();
                         GpuRegisters.setStatMode(VBLANK);
                     }
                     else
@@ -166,6 +166,7 @@ public class GameBoyGPU implements Runnable {
                     GpuRegisters.incrementScanLine();
                     if(GpuRegisters.getCurrentScanline() > 153)
                     {
+                        Util.getInterrupts().resetVblankInterrupt();
                         GpuRegisters.setStatMode(SCANLINE_OAM);
                         GpuRegisters.setCurrentScanline(0);
                     }

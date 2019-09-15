@@ -2,45 +2,47 @@ package joypad;
 
 public class Key {
 	
-	public static int START_VALUE = 0x80;
-	public static int SELECT_VALUE = 0x40;
-	public static int B_VALUE = 0x20;
-	public static int A_VALUE = 0x10;
-	public static int DOWN_VALUE = 0x8;
-	public static int UP_VALUE = 0x4;
-	public static int LEFT_VALUE = 0x2;
-	public static int RIGHT_VALUE = 0x1;
+	public static int START_BITPOS = 3;
+	public static int SELECT_BITPOS = 2;
+	public static int B_BITPOS = 1;
+	public static int A_BITPOS = 0;
+	public static int DOWN_BITPOS = 3;
+	public static int UP_BITPOS = 2;
+	public static int LEFT_BITPOS = 1;
+	public static int RIGHT_BITPOS = 0;
 	
-	public int value;
+	public int bitPos;
 	public boolean isPressed;
-	public Key(String s) throws Exception {
+	public int modeValue = 0;
+	public Key(String s, int modeValue) throws Exception {
+		this.modeValue = modeValue;
 		switch(s.toLowerCase()) {
 		case "start":
-			value = START_VALUE;
+			bitPos = START_BITPOS;
 			break;
 		case "select":
-			value = SELECT_VALUE;
+			bitPos = SELECT_BITPOS;
 			break;
 		case "b":
-			value = B_VALUE;
+			bitPos = B_BITPOS;
 			break;
 		case "a":
-			value = A_VALUE;
+			bitPos = A_BITPOS;
 			break;
 		case "down":
-			value = DOWN_VALUE;
+			bitPos = DOWN_BITPOS;
 			break;
 		case "up":
-			value = UP_VALUE;
+			bitPos = UP_BITPOS;
 			break;
 		case "left":
-			value = LEFT_VALUE;
+			bitPos = LEFT_BITPOS;
 			break;
 		case "right":
-			value = RIGHT_VALUE;
+			bitPos = RIGHT_BITPOS;
 			break;
 		default:
-				throw new Exception("invalid binding");
+			throw new Exception("invalid binding");
 		}
 	}
 	 

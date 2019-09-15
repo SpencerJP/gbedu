@@ -4,106 +4,128 @@ import main.Util;
 
 public class Interrupts {
 	
-	public static int INTERRUPT_ENABLED = 0xffff;
-	public static int INTERRUPT_FLAGS = 0xff0f;
+	public static final int INTERRUPT_ENABLED = 0xFFFF;
+	public static final int INTERRUPT_FLAGS = 0xFF0F;
 	
-	public static int VBLANK_BITPOS = 0;
-	public static int LCDSTAT_BITPOS = 1;
-	public static int TIMER_BITPOS = 2;
-	public static int SERIAL_BITPOS = 3;
-	public static int JOYPAD_BITPOS = 4;
-	
-	public static boolean isVblankInterruptEnabled() {
-		return Util.getBit(VBLANK_BITPOS ,Util.getMemory().getMemoryAtAddress(INTERRUPT_ENABLED));
-	}
-	
-	public static boolean isLCDStatInterruptEnabled() {
-		return Util.getBit(LCDSTAT_BITPOS ,Util.getMemory().getMemoryAtAddress(INTERRUPT_ENABLED));
-	}
-	
-	public static boolean isTimerInterruptEnabled() {
-		return Util.getBit(TIMER_BITPOS ,Util.getMemory().getMemoryAtAddress(INTERRUPT_ENABLED));
+	public static final int VBLANK_BITPOS = 0;
+	public static final int LCDSTAT_BITPOS = 1;
+	public static final int TIMER_BITPOS = 2;
+	public static final int SERIAL_BITPOS = 3;
+	public static final int JOYPAD_BITPOS = 4;
+
+	public int interruptsEnabledRegister = 0;
+	public int interruptFlagsRegister = 0;
+
+	public int getRegisters(int address) {
+		if(address == INTERRUPT_ENABLED) {
+			return interruptsEnabledRegister;
+		}
+		if(address == INTERRUPT_FLAGS) {
+			return interruptFlagsRegister;
+		}
+		throw new RuntimeException("Interrupts: Shouldn't happen");
+
 	}
 
-	public static boolean isSerialInterruptEnabled() {
-		return Util.getBit(SERIAL_BITPOS ,Util.getMemory().getMemoryAtAddress(INTERRUPT_ENABLED));
-	}
-	
+	public void setRegisters(int address, int source) {
+		if(address == INTERRUPT_ENABLED) {
+			interruptsEnabledRegister = source & 0xff;
+		}
+		if(address == INTERRUPT_FLAGS) {
+			interruptFlagsRegister = source & 0xff;
+		}
 
-	public static boolean isJoypadInterruptEnabled() {
-		return Util.getBit(JOYPAD_BITPOS ,Util.getMemory().getMemoryAtAddress(INTERRUPT_ENABLED));
-	}
-	
-	public static boolean hasVblankInterruptOccurred() {
-		return Util.getBit(VBLANK_BITPOS ,Util.getMemory().getMemoryAtAddress(INTERRUPT_FLAGS));
-	}
-	
-	public static boolean hasLCDStatInterruptOccurred() {
-		return Util.getBit(LCDSTAT_BITPOS ,Util.getMemory().getMemoryAtAddress(INTERRUPT_FLAGS));
-	}
-	
-	public static boolean hasTimerInterruptOccurred() {
-		return Util.getBit(TIMER_BITPOS ,Util.getMemory().getMemoryAtAddress(INTERRUPT_FLAGS));
 	}
 
-	public static boolean hasSerialInterruptOccurred() {
-		return Util.getBit(SERIAL_BITPOS,Util.getMemory().getMemoryAtAddress(INTERRUPT_FLAGS));
+	public boolean isVblankInterruptEnabled() {
+		return Util.getBit(interruptsEnabledRegister, VBLANK_BITPOS);
 	}
 	
+	public boolean isLCDStatInterruptEnabled() {
+		return Util.getBit(interruptsEnabledRegister, LCDSTAT_BITPOS);
+	}
+	
+	public boolean isTimerInterruptEnabled() {
+		return Util.getBit(interruptsEnabledRegister, TIMER_BITPOS);
+	}
 
-	public static boolean hasJoypadInterruptOccurred() {
-		return Util.getBit(JOYPAD_BITPOS ,Util.getMemory().getMemoryAtAddress(INTERRUPT_FLAGS));
+	public boolean isSerialInterruptEnabled() {
+		return Util.getBit(interruptsEnabledRegister, SERIAL_BITPOS);
+	}
+
+	public boolean isJoypadInterruptEnabled() {
+		return Util.getBit(interruptsEnabledRegister, JOYPAD_BITPOS);
 	}
 	
-	public static void resetVblankInterrupt() {
-		int current = Util.getMemory().getMemoryAtAddress(INTERRUPT_FLAGS);
-		Util.getMemory().setMemoryAtAddress(INTERRUPT_FLAGS, Util.resetBit(current, VBLANK_BITPOS));
+	public boolean hasVblankInterruptOccurred() {
+		return Util.getBit(interruptFlagsRegister, VBLANK_BITPOS);
 	}
 	
-	public static void resetLCDStatInterrupt() {
-		int current = Util.getMemory().getMemoryAtAddress(INTERRUPT_FLAGS);
-		Util.getMemory().setMemoryAtAddress(INTERRUPT_FLAGS, Util.resetBit(current, LCDSTAT_BITPOS));	
+	public boolean hasLCDStatInterruptOccurred() {
+		return Util.getBit(interruptFlagsRegister, LCDSTAT_BITPOS);
 	}
 	
-	public static void resetTimerInterrupt() {
-		int current = Util.getMemory().getMemoryAtAddress(INTERRUPT_FLAGS);
-		Util.getMemory().setMemoryAtAddress(INTERRUPT_FLAGS, Util.resetBit(current, TIMER_BITPOS));
+	public boolean hasTimerInterruptOccurred() {
+		return Util.getBit(interruptFlagsRegister, TIMER_BITPOS);
 	}
-	
-	public static void resetSerialInterrupt() {
-		int current = Util.getMemory().getMemoryAtAddress(INTERRUPT_FLAGS);
-		Util.getMemory().setMemoryAtAddress(INTERRUPT_FLAGS, Util.resetBit(current, SERIAL_BITPOS));	
-	}
-	
-	public static void resetJoypadInterrupt() {
-		int current = Util.getMemory().getMemoryAtAddress(INTERRUPT_FLAGS);
-		Util.getMemory().setMemoryAtAddress(INTERRUPT_FLAGS, Util.resetBit(current, JOYPAD_BITPOS));
+
+	public boolean hasSerialInterruptOccurred() {
+		return Util.getBit(interruptFlagsRegister, SERIAL_BITPOS);
 	}
 	
 
-	public static void setVblankInterrupt() {
-		int current = Util.getMemory().getMemoryAtAddress(INTERRUPT_FLAGS);
-		Util.getMemory().setMemoryAtAddress(INTERRUPT_FLAGS, Util.setBit(current, VBLANK_BITPOS));
+	public boolean hasJoypadInterruptOccurred() {
+		return Util.getBit(interruptFlagsRegister, JOYPAD_BITPOS);
 	}
 	
-	public static void setLCDStatInterrupt() {
-		int current = Util.getMemory().getMemoryAtAddress(INTERRUPT_FLAGS);
-		Util.getMemory().setMemoryAtAddress(INTERRUPT_FLAGS, Util.setBit(current, LCDSTAT_BITPOS));	
+	public void resetVblankInterrupt() {
+		int current = interruptFlagsRegister;
+		interruptFlagsRegister = Util.resetBit(current, VBLANK_BITPOS);
 	}
 	
-	public static void setTimerInterrupt() {
-		int current = Util.getMemory().getMemoryAtAddress(INTERRUPT_FLAGS);
-		Util.getMemory().setMemoryAtAddress(INTERRUPT_FLAGS, Util.setBit(current, TIMER_BITPOS));
+	public void resetLCDStatInterrupt() {
+		int current = interruptFlagsRegister;
+		interruptFlagsRegister = Util.resetBit(current, LCDSTAT_BITPOS);
 	}
 	
-	public static void setSerialInterrupt() {
-		int current = Util.getMemory().getMemoryAtAddress(INTERRUPT_FLAGS);
-		Util.getMemory().setMemoryAtAddress(INTERRUPT_FLAGS, Util.setBit(current, SERIAL_BITPOS));	
+	public void resetTimerInterrupt() {
+		int current = interruptFlagsRegister;
+		interruptFlagsRegister = Util.resetBit(current, TIMER_BITPOS);
 	}
 	
-	public static void setJoypadInterrupt() {
-		int current = Util.getMemory().getMemoryAtAddress(INTERRUPT_FLAGS);
-		Util.getMemory().setMemoryAtAddress(INTERRUPT_FLAGS, Util.setBit(current, JOYPAD_BITPOS));
-		
+	public void resetSerialInterrupt() {
+		int current = interruptFlagsRegister;
+		interruptFlagsRegister = Util.resetBit(current, SERIAL_BITPOS);
+	}
+	
+	public void resetJoypadInterrupt() {
+		int current = interruptFlagsRegister;
+		interruptFlagsRegister = Util.resetBit(current, JOYPAD_BITPOS);
+	}
+	
+
+	public void setVblankInterrupt() {
+		int current = interruptFlagsRegister;
+		interruptFlagsRegister = Util.setBit(current, VBLANK_BITPOS);
+	}
+	
+	public void setLCDStatInterrupt() {
+		int current = interruptFlagsRegister;
+		interruptFlagsRegister = Util.setBit(current, LCDSTAT_BITPOS);
+	}
+	
+	public void setTimerInterrupt() {
+		int current = interruptFlagsRegister;
+		interruptFlagsRegister = Util.setBit(current, TIMER_BITPOS);
+	}
+	
+	public void setSerialInterrupt() {
+		int current = interruptFlagsRegister;
+		interruptFlagsRegister = Util.setBit(current, SERIAL_BITPOS);
+	}
+	
+	public void setJoypadInterrupt() {
+		int current = interruptFlagsRegister;
+		interruptFlagsRegister = Util.setBit(current, JOYPAD_BITPOS);
 	}
 }

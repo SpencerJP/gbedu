@@ -22,10 +22,12 @@ public class GameBoyMMU {
 	public boolean disableBootrom;
 	private static GameBoyMMU singletonInstance;
 	private IORegisters ior;
+	private Interrupts interrupts;
 	
 	private GameBoyMMU() {
 		addressSpace = new int[65536];
 		ior = new IORegisters(this);
+		interrupts = new Interrupts();
 
 	}
 
@@ -84,14 +86,17 @@ public class GameBoyMMU {
 
 	private int getIORegisters(int address) {
 	    if(address >= 0xff04 && address <= 0xff07){
-            return Clock.getTimerAddress(address);
+            return Clock.getTimerRegisters(address);
         }
         if((address >= 0xff40 && address <= 0xff47) || address == 0xff4a || address == 0xff4b){
-            return GpuRegisters.getMemory(address);
+            return GpuRegisters.getRegisters(address);
         }
 	    if(address == 0xff00) {
-			return Util.getJoypad().joypadRegister;
-        }
+			return Util.getJoypad().getRegister();
+	    }
+		if(address == Interrupts.INTERRUPT_ENABLED || address ==  Interrupts.INTERRUPT_FLAGS) {
+			interrupts.getRegisters(address);
+		}
 
 	    return addressSpace[address] & 0xFF;
 	}
@@ -146,19 +151,23 @@ public class GameBoyMMU {
 			GameBoyGPU.getInstance().resetVRAM();
 		}
 		if((address >= 0xff40 && address <= 0xff47) || address == 0xff4a || address == 0xff4b){
-		    GpuRegisters.setMemory(address, source);
+		    GpuRegisters.setRegisters(address, source);
 		    return;
         }
 		if(address >= 0xff04 && address <= 0xff07) {
-            Clock.setTimerAddress(address, source);
+            Clock.setTimerRegisters(address, source);
             return;
         }
+		if(address == 0xFF00) {
+			Util.getJoypad().setRegister(source & 0x30);
+		}
+		if(address == Interrupts.INTERRUPT_ENABLED || address ==  Interrupts.INTERRUPT_FLAGS) {
+			interrupts.setRegisters(address, source);
+		}
 	}
-	
-	
 
-	
 
-	
-	
+	public Interrupts getInterrupts() {
+		return interrupts;
+	}
 }

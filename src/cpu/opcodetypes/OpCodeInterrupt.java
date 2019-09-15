@@ -19,7 +19,7 @@ public class OpCodeInterrupt extends OpCode {
     public int runCode(GameBoyCPU cpu, GameBoyMMU mmu) throws Exception {
         switch(command) {
             case ENABLE_INTERRUPTS:
-                Util.getCPU().setInterruptsEnabled(true);
+                Util.getCPU().setDelayedInterruptsEnabled(true);
                 break;
             case DISABLE_INTERRUPTS:
                 Util.getCPU().setInterruptsEnabled(false);

@@ -4,6 +4,7 @@ import cpu.GameBoyCPU;
 import gpu.GameBoyGPU;
 import joypad.Controller;
 import mmu.GameBoyMMU;
+import mmu.Interrupts;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -139,6 +140,9 @@ public class Util {
 	}
 	public static Controller getJoypad() {
 		return Controller.getInstance();
+	}
+	public static Interrupts getInterrupts() {
+		return GameBoyMMU.getInstance().getInterrupts();
 	}
 }
 

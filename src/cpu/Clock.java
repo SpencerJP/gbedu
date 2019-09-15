@@ -16,7 +16,7 @@ public class Clock  {
     public static boolean timerIsRunning = false;
 
 
-    public static int getTimerAddress(int address) {
+    public static int getTimerRegisters(int address) {
         switch(address) {
             case 0xff04:
                 return dividerCounter;
@@ -36,7 +36,7 @@ public class Clock  {
         }
     }
 
-    public static void setTimerAddress(int address, int value) {
+    public static void setTimerRegisters(int address, int value) {
         switch(address) {
             case 0xff04:
                 dividerCounter = 0;
@@ -80,7 +80,7 @@ public class Clock  {
                 timerCounter++;
                 if (timerCounter > 0xff) {
                     timerCounter = timerModulo;
-                    Interrupts.setTimerInterrupt();
+                    Util.getInterrupts().setTimerInterrupt();
                 }
             }
         }

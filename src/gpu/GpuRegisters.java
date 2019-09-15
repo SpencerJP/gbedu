@@ -49,6 +49,9 @@ public class GpuRegisters {
 
     //Actual values
     private static boolean coincidenceInterrupt = false;
+
+
+
     private static boolean oamInterrupt = false;
     private static boolean vblankInterrupt = false;
     private static boolean hblankInterrupt = false;
@@ -66,7 +69,7 @@ public class GpuRegisters {
     private static int windowY = 0;
     private static int compareLY = 0;
 
-    public static void setMemory(int address, int value) {
+    public static void setRegisters(int address, int value) {
         value &= 0xFF;
         switch(address) {
             case LCDC:
@@ -104,7 +107,7 @@ public class GpuRegisters {
         }
     }
 
-    public static int getMemory(int address) {
+    public static int getRegisters(int address) {
         switch(address) {
             case LCDC:
                 return getLCDC();
@@ -256,7 +259,8 @@ public class GpuRegisters {
         currentScanLine++;
         if(compareLY == currentScanLine) {
             coincidenceFlag = true;
-            Interrupts.setLCDStatInterrupt();
+            setCoincidenceInterrupt(true);
+            Util.getInterrupts().setLCDStatInterrupt();
         }
     }
 
@@ -266,5 +270,21 @@ public class GpuRegisters {
 
     public static void setCurrentScanline(int i) {
         currentScanLine = i;
+    }
+
+    public static void setCoincidenceInterrupt(boolean coincidenceInterrupt) {
+        GpuRegisters.coincidenceInterrupt = coincidenceInterrupt;
+    }
+
+    public static void setOamInterrupt(boolean oamInterrupt) {
+        GpuRegisters.oamInterrupt = oamInterrupt;
+    }
+
+    public static void setVblankInterrupt(boolean vblankInterrupt) {
+        GpuRegisters.vblankInterrupt = vblankInterrupt;
+    }
+
+    public static void setHblankInterrupt(boolean hblankInterrupt) {
+        GpuRegisters.hblankInterrupt = hblankInterrupt;
     }
 }
