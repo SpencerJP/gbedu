@@ -18,10 +18,11 @@ public class Main {
 		long start = System.currentTimeMillis();
 		try {
 			memory.initialize("test_tetris.gb", disableBootrom);
-//			memory.initialize("cpu_instrs.gb", disableBootrom); // FREEZES
+//			memory.initialize("cpu_instrs.gb", disableBootrom);
 //			memory.initialize("01-special.gb", true);
 //			memory.initialize("drmarioworld.gb", disableBootrom);
 //			memory.initialize("opus5.gb", disableBootrom);
+//			memory.initialize("03-op sp,hl.gb", true);
 
 			//System.out.println(memory.getMemoryAtAddress(0x104));
 		} catch (IOException e) {

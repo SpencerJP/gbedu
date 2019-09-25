@@ -286,31 +286,6 @@ public abstract class OpCode {
 		setFlagN(n);
 		setFlagZ(z);
 	}
-
-	/**
-	 *
-	 * @param cpu
-	 * @param register careful because this is unchecked, can be used with any register depspite only intended for
-	 * @param data
-	 * @throws Exception
-	 */
-	public void push(GameBoyCPU cpu, OpCodeRegister register, int data) throws Exception {
-		int leftByte = (byte)(data & 0xff);
-		int rightByte = (byte)((data >> 8) & 0xFF);
-		setRegister(cpu, register, getRegister(cpu, register) - 1);
-		Util.getMemory().setMemoryAtAddress(getRegister(cpu, register), leftByte);
-		setRegister(cpu, register, getRegister(cpu, register) - 1);
-		Util.getMemory().setMemoryAtAddress(getRegister(cpu, register), rightByte);
-	}
-
-	public int pop(GameBoyCPU cpu, OpCodeRegister register) throws Exception {
-		int leftByte = Util.getMemory().getMemoryAtAddress(getRegister(cpu, register));
-		setRegister(cpu, register, getRegister(cpu, register) + 1);
-		int rightByte = Util.getMemory().getMemoryAtAddress(getRegister(cpu, register));
-		setRegister(cpu, register, getRegister(cpu, register) + 1);
-		return (leftByte << 8 | rightByte);
-	}
-
 	@Override
 	public String toString() {
 		return doc;

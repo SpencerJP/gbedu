@@ -106,10 +106,10 @@ public class OpCodeMath extends OpCode {
 				setAccumulator(cpu, result & 0xff);
 				break;
 			case PUSH:
-				cpu.pushSP(getRegister(cpu, register));
+				cpu.pushSP(getRegister(cpu, register) & 0xFFFF);
 				break;
 			case POP:
-				setRegister(cpu, register, cpu.popSP());
+				setRegister(cpu, register, cpu.popSP() & 0xFFFF);
 				break;
 			case INC:
 				result = (source + 1) & 0xff;

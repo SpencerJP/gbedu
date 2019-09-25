@@ -41,19 +41,16 @@ public class GameBoyCPU {
 
 	private int programCounter = 0;
 
-	int interruptPushCount = 0;
-	int returnPopCount = 0;
-	int callPushCount = 0;
-	int pushCount = 0;
-	int popCount = 0;
+	public static int stackValue = 0;
 
 
 	
 	
 	private static GameBoyCPU singletonInstance;
     private int clockTime;
+	private boolean stopExecution;
 
-    private GameBoyCPU() {
+	private GameBoyCPU() {
 		this.mmu = GameBoyMMU.getInstance();
 		this.opFact = OpCodeFactory.getInstance();
 	}
@@ -77,7 +74,7 @@ public class GameBoyCPU {
 		//GameBoyMMU.addAddressToWatchlist(0xff40);
 		//addBreakPoints(  0x02ca);
 		long frametimeStart = System.nanoTime();
-		while(true) {
+		while(!stopExecution) {
 			cycles = runOperation();
 			Clock.addClockTime(cycles);
 			if (interruptsEnabled) {
@@ -89,9 +86,14 @@ public class GameBoyCPU {
                 busyWait(frametimeStart);
 				frametimeStart = System.nanoTime();
 			}
-			if(programCounter == 0x39f) {
-				sp = 0x3ffd;
-			}
+//			if(programCounter == 0x33) {
+//				System.out.println(Util.byteToHex16(sp));
+//			}
+//
+//			if(programCounter == 0x2836) {
+//				System.out.println(Util.byteToHex16(sp));
+//			}
+
 
 //			if (programCounter == 0x0384) {
 //					int i = 0;
@@ -153,6 +155,7 @@ public class GameBoyCPU {
 
 
 			cycles = op.runCode(this, mmu);
+			stackWatcher(op);
 			if(breakPoints.contains(programCounter - op.getInstructionSize())) {
 				System.out.println("after running code at " + Util.byteToHex16(programCounter - op.getInstructionSize()));
 			}
@@ -182,6 +185,7 @@ public class GameBoyCPU {
 			interrupts.resetVblankInterrupt();
 			setInterruptsEnabled(false);
 			pushSP(programCounter);
+			stackWatcher("PUSH");
 			setProgramCounter(0x40);
 			return;
 		}
@@ -190,6 +194,7 @@ public class GameBoyCPU {
 			interrupts.resetLCDStatInterrupt();
 			setInterruptsEnabled(false);
 			pushSP(programCounter);
+			stackWatcher("PUSH");
 			setProgramCounter(0x48);
 			return;
 		}
@@ -198,6 +203,7 @@ public class GameBoyCPU {
 			interrupts.resetTimerInterrupt();
 			setInterruptsEnabled(false);
 			pushSP(programCounter);
+			stackWatcher("PUSH");
 			setProgramCounter(0x50);
 			return;
 		}
@@ -206,6 +212,7 @@ public class GameBoyCPU {
 			interrupts.resetSerialInterrupt();
 			setInterruptsEnabled(false);
 			pushSP(programCounter);
+			stackWatcher("PUSH");
 			setProgramCounter(0x58);
 			return;
 		}
@@ -214,6 +221,7 @@ public class GameBoyCPU {
 			interrupts.resetJoypadInterrupt();
 			setInterruptsEnabled(false);
 			pushSP(programCounter);
+			stackWatcher("PUSH");
 			setProgramCounter(0x60);
 		}
 	}
@@ -341,24 +349,59 @@ public class GameBoyCPU {
 		return (a << 8 | f);
 	}
 
-	/**
-	 *
-	 * @param data in sixteen bits
-	 */
+	public void stackWatcher(OpCode opcode) {
+		try {
+			if(opcode.toString().contains("LD SP")) {
+				stackValue = get16BitOperand();
+			}
+			if(opcode.toString().contains("RET") || opcode.toString().contains("POP")) {
+				stackValue = stackValue + 2;
+			}
+			if(opcode.toString().contains("CALL") || opcode.toString().contains("PUSH") || opcode.toString().contains("RST")) {
+				stackValue = stackValue - 2;
+			}
+			if(!(stackValue == sp)) {
+				throw new Exception(Util.byteToHex16(programCounter) +": stackValue: " + Util.byteToHex16(stackValue) + " sp: " + Util.byteToHex16(sp));
+			}
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+			stopExecution = true;
+		}
+	}
+
+	public void stackWatcher(String pushOrPop) {
+		try {
+			if(pushOrPop.equalsIgnoreCase("PUSH")) {
+				stackValue = stackValue - 2;
+			}
+			else {
+				stackValue = stackValue + 2;
+			}
+			if(!(stackValue == sp)) {
+				throw new Exception(Util.byteToHex16(programCounter) +": stackValue: " + Util.byteToHex16(stackValue) + " sp: " + Util.byteToHex16(sp));
+			}
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+			stopExecution = true;
+		}
+	}
+
 	public void pushSP(int data) {
 		int leftByte = (byte)(data & 0xff);
 		int rightByte = (byte)((data >> 8) & 0xFF);
-		sp--;
+		setSP((sp - 1) & 0xffff);
 		Util.getMemory().setMemoryAtAddress(getSP(), leftByte);
-		sp--;
+		setSP((sp - 1) & 0xffff);
 		Util.getMemory().setMemoryAtAddress(getSP(), rightByte);
 	}
 
 	public int popSP() {
 		int leftByte = Util.getMemory().getMemoryAtAddress(getSP());
-		sp++;
+		setSP((sp + 1) & 0xffff);
 		int rightByte = Util.getMemory().getMemoryAtAddress(getSP());
-		sp++;
+		setSP((sp + 1) & 0xffff);
 		return (leftByte << 8 | rightByte);
 	}
 
